@@ -13,8 +13,10 @@ functions:
     sort(i) // sorts cars in ith stack based on id
     move(i, j) //moves as many cars as possible from ith stack to jth stack
                //if j gets full, continue to j+1, j+2, ...
-    
+    pop(car) // removes the said car if possible
 
 notes:
     dont use Stack/Queue/LinkedList libraries
-    
+
+how to compile and run:
+    //g++ -o build/parkinglot src/main.cpp `fltk-config --cxxflags --ldflags`; ./build/parkinglot
