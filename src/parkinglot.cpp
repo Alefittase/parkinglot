@@ -14,7 +14,10 @@ public:
     // Getters
     int getSize() const {return size;}
     int getCapacity() const {return capacity;}
-    Car* getTop() const {return top;}
+    Car* getTop() const {
+        if(size==0) return nullptr;
+        return top;
+    }
     
     // Setters
     void setSize(int newSize) {size=newSize;}
@@ -23,11 +26,11 @@ public:
     
 
     int push(Car* newest){ //returns 1 if push is successful, returns 0 if stack is full
-        if(size==capacity) return 0;
+        if(size==capacity) return 1;
         if(size>0) newest->setNext(top);
         top = newest;
         size++;
-        return 1;
+        return 0;
     }
     
     Car* pop(){
@@ -39,10 +42,6 @@ public:
     }
 
     void mergeSort(){}
-    
-    char peek(){
-        return top.getElement();
-    }
 };
 
     
@@ -71,12 +70,12 @@ public:
     
 
     int enqueue(Car* car){
-        if(size==capacity) return 0;
+        if(size==capacity) return 1;
         if(size>0) rear->setNext(newest);
         if(size==0) front=newest;
         rear = newest;
         size++;
-        return 1;
+        return 0;
     }
     
     Car* dequeue(){
@@ -123,18 +122,41 @@ public:
 
 class Parkinglot {
 private:
+    MyQueue carQ;
     vector<MyStack> parkings;
 public:
-    int insert(Car* car){ //returns 1 if insert is successful, returns 0 if parking is full.
-        for(MyStack parking : parkings){
-            if(parking.push(car)) return 1;
-        }
+    ParkingLot();
+    int addToQueue(string carId, string model, string driverName){
+        Car* car(string carId, string model, string driverName);
+        if(carQ.enqueue(car)) return 1;
         return 0;
+    }
+    int insert(Car* car){ //returns 0 if insert is successful, returns 0 if parking is full.
+        for(MyStack parking : parkings){
+            if(!parking.push(car)) return 0;
+        }
+        return 1;
     }
     int insertAt(Car* car, int i){
         return parkings[i].push(car);
     }
     void sort(int i);
-    void move(int i, int j);
-    void pop(Car car);
+    void move(int i, int j){
+        int cnt=0;
+        while(parkings[i].getTop()!=nullptr && cnt<parkings.size()){
+            if(parkings[j].enqueue(parkings[i].dequeue())) j++;
+            if(j==i) j++;
+            if(j==parkings.size()) j=0;
+            cnt++;
+        }
+    }
+    void popCar(Car* car){
+        for(MyStack parking : parkings){
+            if(parking.getTop()==car){
+                parking.pop();
+                return 0;
+            }
+        }
+        return 1;
+    }
 };
