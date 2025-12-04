@@ -41,7 +41,7 @@ public:
         return returnee;
     }
 
-    void mergeSort(){}
+    void sort(){}
 };
 
     
@@ -140,7 +140,9 @@ public:
     int insertAt(Car* car, int i){
         return parkings[i].push(car);
     }
-    void sort(int i);
+    void sort(int i){
+        parkings[i].sort();
+    }
     void move(int i, int j){
         int cnt=0;
         while(parkings[i].getTop()!=nullptr && cnt<parkings.size()){
