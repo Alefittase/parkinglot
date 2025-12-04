@@ -6,6 +6,7 @@
 #include <FL/Fl_Int_Input.H>
 #include <cstdlib>
 #include <cstdio>
+#include <iostream>
 
 using namespace std;
 
