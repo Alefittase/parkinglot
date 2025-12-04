@@ -46,8 +46,55 @@ public:
 };
 
     
-class MyQueue{
+class MyQueue {
+private:
+    int size;
+    int capacity;
+    Car* front=nullptr;
+    Car* rear=nullptr;
 
+public:
+    // Constructors
+    MyQueue() : size(0), front(nullptr), rear(nullptr) {}
+    MyQueue(Car* firstCar) : size(1) {
+        enqueue(firstCar);
+    }
+    
+    // Getters
+    int getSize() const {return size;}
+    Car* getFront() const {return front;}
+    Car* getRear() const {return rear;}
+
+    // Setters
+    void setSize(int newSize) {size=newSize;}
+    void setFront(Car* newFront) {front=newFront;}
+    
+
+    int enqueue(Car* car){
+        if(size==capacity) return 0;
+        if(size>0) rear->setNext(newest);
+        if(size==0) front=newest;
+        rear = newest;
+        size++;
+        return 1;
+    }
+    
+    Car* dequeue(){
+        if(size==0) return nullptr;
+        Car* returnee=front;
+        if(size>1) front=front->getNext();
+        size--;
+        return returnee;
+    }
+
+    void printQueue(){
+        Car* car = front;
+        for(int i=0; i<size; i++){
+        cout<<car->getElement()<<" ";
+        car=car->getNext();
+        }
+        cout<<"\n";
+    }
 };
 
 class Car {
