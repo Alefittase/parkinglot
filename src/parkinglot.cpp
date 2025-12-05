@@ -53,9 +53,16 @@ public:
     void setCapacity(int newCap) {capacity=newCap;}
     void setTop(Car* newTop) {top=newTop;}
     
+    int isEmpty(){
+        return (size==0);
+    }
+
+    int isFull(){
+        return (size==capacity);
+    }
 
     int push(Car* newest){ //0 -> "successful", 1 -> "Stack is full"
-        if(size==capacity) return 1;
+        if(isFull()) return 1;
         if(size>0) newest->setNext(top);
         top = newest;
         size++;
@@ -63,7 +70,7 @@ public:
     }
     
     Car* pop(){
-        if(size==0) return nullptr;
+        if(isEmpty()) return nullptr;
         Car* returnee=top;
         if(size>1) top=top->getNext();
         size--;
@@ -71,10 +78,6 @@ public:
     }
 
     void sort(){}
-
-    int isEmpty(){
-        return (size==0);
-    }
 
     ~MyStack() {
     while (top != nullptr) {
@@ -110,18 +113,25 @@ public:
     void setFront(Car* newFront) {front=newFront;}
     void setCapacity(int newCap) {capacity=newCap;}
     
+    int isEmpty(){
+        return (size==0);
+    }
+
+    int isFull(){
+        return (size==capacity);
+    }
 
     int enqueue(Car* car){ //0 -> "successful", 1 -> "Queue is full"
-        if(size==capacity) return 1;
+        if(isFull()) return 1;
         if(size>0) rear->setNext(car);
-        if(size==0) front=car;
+        if(isEmpty()) front=car;
         rear = car;
         size++;
         return 0;
     }
     
     Car* dequeue(){
-        if(size==0) return nullptr;
+        if(isEmpty()) return nullptr;
         Car* returnee=front;
         if(size>1) front=front->getNext();
         size--;
@@ -159,9 +169,20 @@ public:
             parkings.push_back(stack);
         }
     }
+
+    void initialize(){
+        for(int i=0; i<parkings.size(); i++){
+            while(!carQ.isEmpty() && !parkings[i].isFull()){
+                parkings[i].push(carQ.dequeue());
+            }
+        }
+    }
+
     int addToQueue(string carId, string model, string driverName){
         Car* car = new Car(carId, model, driverName);
-        return carQ.enqueue(car); //returns as enqueue states
+        int result = carQ.enqueue(car);
+        initialize();
+        return result;
     }
     int insert(Car* car){ //0 -> "Successful", 1 -> "parkinglot is full"
         for(MyStack parking : parkings){
@@ -190,6 +211,7 @@ public:
         for(MyStack parking : parkings){
             if(parking.getTop()==car){
                 parking.pop();
+                initialize();
                 return 0;
             }
         }
@@ -257,4 +279,7 @@ series of events:
 - enqueue 30 more cars
 - pop car 30
 - find car 12
+- pop a bunch of cars
+- insert car at stack 5
+- 
 */
