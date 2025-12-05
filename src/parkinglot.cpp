@@ -1,3 +1,32 @@
+#include <iostream>
+#include <string>
+#include <vector>
+using namespace std;
+
+class Car {
+private:
+    string carId, model, driverName;
+    Car* next;
+
+public:
+    // Constructors
+    Car(string carID, string mod, string driver) : carId(carID), model(mod), driverName(driver), next(nullptr) {}
+    Car(string carID, string mod, string driver, Car* nextCar) : carId(carID), model(mod), driverName(driver), next(nextCar) {}
+    
+    // Getters
+    string getCarId() const {return carId;}
+    string getModel() const {return model;}
+    string getDriverName() const {return driverName;}
+    string getInfo() const {return "Car ID: "+carId+"\nModel: "+model+"\nDriver: "+driverName+"\n";}
+    Car* getNext() const {return next;}
+    
+    // Setters
+    void setCarId(string carID) {carId=carID;}
+    void setModel(string mod) {model=mod;}
+    void setDriverName(string driver) {driverName=driver;}
+    void setNext(Car* nextCar) {next=nextCar;}
+};
+
 class MyStack {
 private:
     int size;
@@ -25,7 +54,7 @@ public:
     void setTop(Car* newTop) {top=newTop;}
     
 
-    int push(Car* newest){ //returns 1 if push is successful, returns 0 if stack is full
+    int push(Car* newest){ //0 -> "successful", 1 -> "Stack is full"
         if(size==capacity) return 1;
         if(size>0) newest->setNext(top);
         top = newest;
@@ -42,9 +71,20 @@ public:
     }
 
     void sort(){}
+
+    int isEmpty(){
+        return (size==0);
+    }
+
+    ~MyStack() {
+    while (top != nullptr) {
+        Car* temp = top;
+        top = top->getNext();
+        delete temp;
+    }
+}
 };
 
-    
 class MyQueue {
 private:
     int size;
@@ -61,19 +101,21 @@ public:
     
     // Getters
     int getSize() const {return size;}
+    int getCapacity() const {return capacity;}
     Car* getFront() const {return front;}
     Car* getRear() const {return rear;}
 
     // Setters
     void setSize(int newSize) {size=newSize;}
     void setFront(Car* newFront) {front=newFront;}
+    void setCapacity(int newCap) {capacity=newCap;}
     
 
-    int enqueue(Car* car){
+    int enqueue(Car* car){ //0 -> "successful", 1 -> "Queue is full"
         if(size==capacity) return 1;
-        if(size>0) rear->setNext(newest);
-        if(size==0) front=newest;
-        rear = newest;
+        if(size>0) rear->setNext(car);
+        if(size==0) front=car;
+        rear = car;
         size++;
         return 0;
     }
@@ -89,35 +131,19 @@ public:
     void printQueue(){
         Car* car = front;
         for(int i=0; i<size; i++){
-        cout<<car->getElement()<<" ";
+        cout<<car->getCarId()<<" ";
         car=car->getNext();
         }
         cout<<"\n";
     }
-};
 
-class Car {
-private:
-    string carId, model, driverName;
-    Car* next;
-
-public:
-    // Constructors
-    Car(string carID, string mod, string driver) : carId(carID), model(mod), driverName(driver), next(nullptr) {}
-    Car(string carID, string mod, string driver, Car* nextCar) : carId(carID), model(mod), driverName(driver), next(nextCar) {}
-    
-    // Getters
-    string getCarId() const {return carId;}
-    string getModel() const {return model;}
-    string getDriverName() const {return driverName;}
-    string getInfo() const {return "Car ID: "+carId+"\nModel: "+model+"\nDriver: "+driverName+"\n";}
-    Car* getNext() const {return next;}
-    
-    // Setters
-    void setCarId(string carID) {carId=carID;}
-    void setModel(string mod) {model=mod;}
-    void setDriverName(string driver) {driverName=driver;}
-    void setNext(Car* nextCar) {next=nextCar;}
+    ~MyQueue() {
+    while (front != nullptr) {
+        Car* temp = front;
+        front = front->getNext();
+        delete temp;
+    }
+}
 };
 
 class Parkinglot {
@@ -125,34 +151,42 @@ private:
     MyQueue carQ;
     vector<MyStack> parkings;
 public:
-    ParkingLot();
-    int addToQueue(string carId, string model, string driverName){
-        Car* car(string carId, string model, string driverName);
-        if(carQ.enqueue(car)) return 1;
-        return 0;
+    Parkinglot(int queueCap, int stackNum, int stackCap){
+        carQ.setCapacity(queueCap);
+        for(int i=0; i<stackNum; i++){
+            MyStack stack;
+            stack.setCapacity(stackCap);
+            parkings.push_back(stack);
+        }
     }
-    int insert(Car* car){ //returns 0 if insert is successful, returns 0 if parking is full.
+    int addToQueue(string carId, string model, string driverName){
+        Car* car = new Car(carId, model, driverName);
+        return carQ.enqueue(car); //returns as enqueue states
+    }
+    int insert(Car* car){ //0 -> "Successful", 1 -> "parkinglot is full"
         for(MyStack parking : parkings){
             if(!parking.push(car)) return 0;
         }
         return 1;
     }
-    int insertAt(Car* car, int i){
+    int insertAt(Car* car, int i){ // returns as push states
         return parkings[i].push(car);
     }
     void sort(int i){
         parkings[i].sort();
     }
-    void move(int i, int j){
+    int move(int i, int j){// 0 -> "move successful", 1 -> "not enough space in parkinglot for emptying parking i"
         int cnt=0;
-        while(parkings[i].getTop()!=nullptr && cnt<parkings.size()){
-            if(parkings[j].enqueue(parkings[i].dequeue())) j++;
+        while(!parkings[i].isEmpty() && cnt<parkings.size()){
+            if(parkings[j].push(parkings[i].pop())) j++;
             if(j==i) j++;
             if(j==parkings.size()) j=0;
             cnt++;
         }
+        if(parkings[i].isEmpty()) return 0;
+        return 1;
     }
-    void popCar(Car* car){
+    int popCar(Car* car){ // 0 -> "successful", 1 -> "car not found"
         for(MyStack parking : parkings){
             if(parking.getTop()==car){
                 parking.pop();
@@ -161,4 +195,66 @@ public:
         }
         return 1;
     }
+
+    pair<int, int> find(Car* car){
+        //search all stacks and return <stack number, the depth in which the car is>
+    }
 };
+
+// temporary main function for testing purposes without gui
+int main(){
+    int queueCapacity=30, stackNumber=6, stackCapacity=10;
+    string carIDs[60] = {
+        "CAR001", "CAR002", "CAR003", "CAR004", "CAR005",
+        "CAR006", "CAR007", "CAR008", "CAR009", "CAR010",
+        "CAR011", "CAR012", "CAR013", "CAR014", "CAR015",
+        "CAR016", "CAR017", "CAR018", "CAR019", "CAR020",
+        "CAR021", "CAR022", "CAR023", "CAR024", "CAR025",
+        "CAR026", "CAR027", "CAR028", "CAR029", "CAR030",
+        "CAR031", "CAR032", "CAR033", "CAR034", "CAR035",
+        "CAR036", "CAR037", "CAR038", "CAR039", "CAR040",
+        "CAR041", "CAR042", "CAR043", "CAR044", "CAR045",
+        "CAR046", "CAR047", "CAR048", "CAR049", "CAR050",
+        "CAR051", "CAR052", "CAR053", "CAR054", "CAR055",
+        "CAR056", "CAR057", "CAR058", "CAR059", "CAR060"
+    };
+    string models[60] = {
+        "Toyota Camry", "Honda Civic", "Ford Mustang", "Toyota Camry", "Honda Accord",
+        "BMW 3 Series", "Tesla Model 3", "Audi A4", "Mercedes C-Class", "Toyota Camry",
+        "Ford F-150", "Chevrolet Silverado", "Honda CR-V", "Toyota RAV4", "BMW 3 Series",
+        "Tesla Model Y", "Subaru Outback", "Jeep Wrangler", "Toyota Corolla", "Honda Civic",
+        "Ford Explorer", "Chevrolet Equinox", "Nissan Altima", "Hyundai Sonata", "Kia Sportage",
+        "Volkswagen Golf", "Mazda CX-5", "Lexus RX", "Acura MDX", "Toyota Camry",
+        "BMW X5", "Mercedes E-Class", "Audi Q5", "Tesla Model S", "Ford Mustang",
+        "Chevrolet Camaro", "Dodge Charger", "Toyota Highlander", "Honda Pilot", "Ford F-150",
+        "Ram 1500", "GMC Sierra", "Toyota Tacoma", "Honda Civic", "Jeep Grand Cherokee",
+        "Land Rover Range Rover", "Porsche 911", "Subaru Forester", "Mazda3", "Hyundai Elantra",
+        "Kia Telluride", "Volkswagen Tiguan", "Genesis G80", "Cadillac Escalade", "Ford Bronco",
+        "Chevrolet Tahoe", "Toyota 4Runner", "Honda Odyssey", "Nissan Rogue", "BMW 5 Series"
+    };
+    string driverNames[60] = {
+        "John Smith", "Emma Johnson", "Michael Williams", "Sophia Brown", "David Jones",
+        "Olivia Garcia", "James Miller", "Ava Davis", "Robert Rodriguez", "Isabella Martinez",
+        "William Hernandez", "Mia Lopez", "Joseph Gonzalez", "Charlotte Wilson", "Thomas Anderson",
+        "Amelia Thomas", "Charles Taylor", "Harper Moore", "Daniel Jackson", "Evelyn Martin",
+        "Matthew Lee", "Abigail Perez", "Christopher Thompson", "Emily White", "Andrew Harris",
+        "Elizabeth Sanchez", "Joshua Clark", "Sofia Ramirez", "Ryan Lewis", "Avery Robinson",
+        "Nicholas Walker", "Ella Young", "Jonathan King", "Scarlett Wright", "Benjamin Scott",
+        "Grace Torres", "Samuel Nguyen", "Chloe Hill", "Kevin Flores", "Victoria Green",
+        "Jason Adams", "Lily Nelson", "Eric Baker", "Zoey Hall", "Brian Rivera",
+        "Penelope Campbell", "Timothy Mitchell", "Luna Carter", "Steven Roberts", "Hannah Phillips",
+        "Justin Evans", "Aria Turner", "Brandon Parker", "Addison Collins", "Alexander Edwards",
+        "Natalie Stewart", "Patrick Morris", "Stella Rogers", "Nathan Reed", "Savannah Cook"
+    };
+
+    return 0;
+}
+/*
+series of events:
+- enqueue 21 cars and put them normally into stacks (question: should parkinglot initialize after each enqueue or only when it's called or what?)
+- sort stack number 5
+- move all cars from stack 0 to 2
+- enqueue 30 more cars
+- pop car 30
+- find car 12
+*/
