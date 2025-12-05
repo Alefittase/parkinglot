@@ -173,8 +173,13 @@ public:
     }
 
     int initialize(){ //0 -> queue successfully emptied. 1 -> parkinglot is full please wait
-        for(int i=0; i<parkings.size(); i++)
-            while(!carQ.isEmpty() && !insert(carQ.dequeue())); //while queue is not empty and insert to parking is successful
+        for(int i=0; i<parkings.size(); i++){
+            while(!carQ.isEmpty()){
+                Car* car = carQ.getFront();
+                if(insert(car)) return 1;
+                carQ.dequeue();
+            }
+        }
         if(carQ.isEmpty()) return 0;
         return 1;
     }
@@ -199,10 +204,12 @@ public:
     }
     int move(int i, int j){// 0 -> "move successful", 1 -> "not enough space in parkinglot for emptying parking i"
         int cnt=0;
-        while(!parkings[i].isEmpty() && cnt<parkings.size()){
-            if(parkings[j].push(parkings[i].pop())) j++;
+        int cap=parkings[0].getSize();
+        while(!parkings[i].isEmpty() && cnt<(parkings.size()*cap+1)){
+            if(parkings[j].isFull()) j++;
             if(j==i) j++;
             if(j==parkings.size()) j=0;
+            parkings[j].push(parkings[i].pop());
             cnt++;
         }
         if(parkings[i].isEmpty()) return 0;
@@ -239,55 +246,47 @@ public:
     }
 
     void display(){
-    cout<<"Cars in queue:\n";
-    if(carQ.isEmpty()) {
-        cout << "(empty)";
-    } else {
-        Car* car = carQ.getFront();
-        for(int i=0; i<carQ.getSize(); i++){
-            if(car != nullptr) {
-                cout<<car->getCarId()<<" ";
-                car = car->getNext();
+        cout<<"Cars in queue:\n";
+        if(carQ.isEmpty()) {
+            cout << "(empty)";
+        } else {
+            Car* car = carQ.getFront();
+            for(int i=0; i<carQ.getSize(); i++){
+                if(car != nullptr) {
+                    cout<<car->getCarId()<<" ";
+                    car = car->getNext();
+                }
             }
         }
-    }
-    cout<<"\nCars in parkinglot:\n";
-    for(int stackIdx = 0; stackIdx < parkings.size(); stackIdx++){ 
-        cout << "Stack " << stackIdx << ": ";
-        MyStack& parking = parkings[stackIdx];
-        
-        // Show empty slots
-        for(int i=0; i<parking.getCapacity()-parking.getSize(); i++) 
-            cout<<"- ";
-        
-        // Show cars (top to bottom)
-        Car* currentCar = parking.getTop();
-        while(currentCar != nullptr){
-            cout<<currentCar->getCarId()<<" ";
-            currentCar = currentCar->getNext();
+        cout<<"\nCars in parkinglot:\n";
+        for(int stackIdx = 0; stackIdx < parkings.size(); stackIdx++){
+            MyStack& parking = parkings[stackIdx];
+
+            // Show empty slots
+            for(int i=0; i<parking.getCapacity()-parking.getSize(); i++) 
+                cout<<"- ";
+
+            // Show cars (top to bottom)
+            Car* currentCar = parking.getTop();
+            while(currentCar != nullptr){
+                cout<<currentCar->getCarId()<<" ";
+                currentCar = currentCar->getNext();
+            }
+            cout<<"\n";
         }
-        cout<<"\n";
     }
-}
 };
 
 // temporary main function for testing purposes without gui
 int main(){
-    string carIDs[60] = {
-        "CAR001", "CAR002", "CAR003", "CAR004", "CAR005",
-        "CAR006", "CAR007", "CAR008", "CAR009", "CAR010",
-        "CAR011", "CAR012", "CAR013", "CAR014", "CAR015",
-        "CAR016", "CAR017", "CAR018", "CAR019", "CAR020",
-        "CAR021", "CAR022", "CAR023", "CAR024", "CAR025",
-        "CAR026", "CAR027", "CAR028", "CAR029", "CAR030",
-        "CAR031", "CAR032", "CAR033", "CAR034", "CAR035",
-        "CAR036", "CAR037", "CAR038", "CAR039", "CAR040",
-        "CAR041", "CAR042", "CAR043", "CAR044", "CAR045",
-        "CAR046", "CAR047", "CAR048", "CAR049", "CAR050",
-        "CAR051", "CAR052", "CAR053", "CAR054", "CAR055",
-        "CAR056", "CAR057", "CAR058", "CAR059", "CAR060"
+    int carIDs[100] = {
+        1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
+        21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40,
+        41, 42, 43, 44, 45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60,
+        61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, 72, 73, 74, 75, 76, 77, 78, 79, 80, 81
     };
-    string models[60] = {
+    
+    string models[100] = {
         "Toyota Camry", "Honda Civic", "Ford Mustang", "Toyota Camry", "Honda Accord",
         "BMW 3 Series", "Tesla Model 3", "Audi A4", "Mercedes C-Class", "Toyota Camry",
         "Ford F-150", "Chevrolet Silverado", "Honda CR-V", "Toyota RAV4", "BMW 3 Series",
@@ -299,9 +298,15 @@ int main(){
         "Ram 1500", "GMC Sierra", "Toyota Tacoma", "Honda Civic", "Jeep Grand Cherokee",
         "Land Rover Range Rover", "Porsche 911", "Subaru Forester", "Mazda3", "Hyundai Elantra",
         "Kia Telluride", "Volkswagen Tiguan", "Genesis G80", "Cadillac Escalade", "Ford Bronco",
-        "Chevrolet Tahoe", "Toyota 4Runner", "Honda Odyssey", "Nissan Rogue", "BMW 5 Series"
+        "Chevrolet Tahoe", "Toyota 4Runner", "Honda Odyssey", "Nissan Rogue", "BMW 5 Series",
+        "Tesla Model X", "Audi A6", "Mercedes GLC", "Toyota Prius", "Honda Fit",
+        "Ford Escape", "Chevrolet Malibu", "Nissan Sentra", "Hyundai Tucson", "Kia Sorento",
+        "Volkswagen Jetta", "Mazda6", "Lexus ES", "Acura RDX", "BMW X3",
+        "Mercedes A-Class", "Audi Q7", "Tesla Cybertruck", "Ford Ranger", "Chevrolet Traverse",
+        "Toyota Sienna", "Honda Passport"
     };
-    string driverNames[60] = {
+    
+    string driverNames[100] = {
         "John Smith", "Emma Johnson", "Michael Williams", "Sophia Brown", "David Jones",
         "Olivia Garcia", "James Miller", "Ava Davis", "Robert Rodriguez", "Isabella Martinez",
         "William Hernandez", "Mia Lopez", "Joseph Gonzalez", "Charlotte Wilson", "Thomas Anderson",
@@ -313,124 +318,200 @@ int main(){
         "Jason Adams", "Lily Nelson", "Eric Baker", "Zoey Hall", "Brian Rivera",
         "Penelope Campbell", "Timothy Mitchell", "Luna Carter", "Steven Roberts", "Hannah Phillips",
         "Justin Evans", "Aria Turner", "Brandon Parker", "Addison Collins", "Alexander Edwards",
-        "Natalie Stewart", "Patrick Morris", "Stella Rogers", "Nathan Reed", "Savannah Cook"
+        "Natalie Stewart", "Patrick Morris", "Stella Rogers", "Nathan Reed", "Savannah Cook",
+        "Oliver Murphy", "Ethan Rivera", "Logan Cooper", "Lucas Richardson", "Mason Howard",
+        "Carter Ward", "Jayden Brooks", "Gabriel Sanders", "Luke Price", "Isaiah Bennett",
+        "Henry Wood", "Sebastian Barnes", "Jack Ross", "Owen Henderson", "Wyatt Coleman",
+        "Grayson Jenkins", "Leo Perry", "Julian Powell", "Mateo Long", "Dominic Hughes",
+        "Lincoln Flores", "Josiah Washington"
     };
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////
-    int queueCapacity=30, stackNumber=6, stackCapacity=10;
+    int queueCapacity = 30, stackNumber = 6, stackCapacity = 10;
     Parkinglot parkinglot(queueCapacity, stackNumber, stackCapacity);
     
-    // Convert carIDs to integers
-    int carIDnums[60];
-    for(int i = 0; i < 60; i++) {
-        string numStr = carIDs[i].substr(3);
-        carIDnums[i] = stoi(numStr);
-    }
-    
-    cout << "=== Initial State ===" << endl;
+    cout << "=== INITIAL STATE ===\n";
     cout << "Queue capacity: " << queueCapacity << endl;
     cout << "Number of stacks: " << stackNumber << endl;
     cout << "Stack capacity: " << stackCapacity << endl;
-    cout << endl;
+    cout << "Total parking capacity: " << stackNumber * stackCapacity << endl;
     
-    // Event 1: Enqueue 21 cars
-    cout << "=== Event 1: Enqueue 21 cars ===" << endl;
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 1: Enqueue 21 cars\n";
     int added = 0;
     for(int i = 0; i < 21; i++) {
-        int result = parkinglot.addToQueue(carIDnums[i], models[i], driverNames[i]);
+        int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
         if(result == 0) {
             added++;
         } else {
-            cout << "Failed to add car " << carIDnums[i] << " (queue full)" << endl;
+            cout << "Queue full! Could not add car " << carIDs[i] << endl;
         }
     }
-    cout << "Successfully added " << added << " cars to queue" << endl;
+    cout << "\nSuccessfully added " << added << " cars to queue\n";
+    cout << "\nAfter Event 1:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+
+    ///////////////////////////////////////////////////////////////////
+    cout << "EVENT 2: Sort stack number 0\n";
+    parkinglot.sort(0);
+    cout << "\nSuccessfully sorted stack 0 (no change, to be written later)\n";
+    cout << "\nAfter Event 2:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
     
-    cout << "\n=== Current State (simplified) ===" << endl;
     
-    // Event 2: Sort stack number 5
-    cout << "\n=== Event 2: Sort stack 5 (index 4) ===" << endl;
-    
-    // Event 3: Move all cars from stack 0 to 2
-    cout << "\n=== Event 3: Move cars from stack 0 to stack 2 ===" << endl;
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 3: Move all cars from stack 0 to stack 2\n";
     int moveResult = parkinglot.move(0, 2);
-    cout << "Move result: " << moveResult << endl;
+    if(moveResult == 0) {
+        cout << "Move successful: All cars moved from stack 0 to stack 2\n";
+    } else {
+        cout << "Move failed: Not enough space to empty stack 0\n";
+    }
+    cout << "\nAfter Event 3:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
     
-    // Event 4: Enqueue 30 more cars
-    cout << "\n=== Event 4: Enqueue 30 more cars ===" << endl;
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 4: Enqueue 30 more cars (cars 21-50)\n";
     added = 0;
     for(int i = 21; i < 51; i++) {
-        int result = parkinglot.addToQueue(carIDnums[i], models[i], driverNames[i]);
+        int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
+        if(result == 0) {
+            added++;
+        } else {
+            cout << "Queue full! Could not add car " << carIDs[i] << endl;
+        }
+    }
+    cout << "\nSuccessfully added " << added << " more cars\n";
+    cout << "\nAfter Event 4:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 5: Pop car 20\n";
+    Car* tempCar20 = new Car(20, "", "");
+    int popResult = parkinglot.popCar(tempCar20);
+    if(popResult == 0) {
+        cout << "Car 20 successfully popped\n";
+    } else {
+        cout << "Car 20 not found (may not be at top of any stack)\n";
+    }
+    delete tempCar20;
+    cout << "\nAfter Event 5:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 6: Find car 12\n";
+    Car* tempCar12 = new Car(12, "", "");
+    pair<int, int> findResult = parkinglot.find(tempCar12);
+    if(findResult.first != -1) {
+        cout << "Car 12 found at stack " << findResult.first 
+             << ", position " << findResult.second << " (0 = top)\n";
+    } else {
+        cout << "Car 12 not found\n";
+    }
+    delete tempCar12;
+    cout << "\nAfter Event 6:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 7: Pop cars 31, 30, 29, 28, 19, 18, 50, 49, 48, 47, 2, 3, 4, 5, 40, 39\n";
+    Car* tempCar31 = new Car(31, "", "");
+    Car* tempCar30 = new Car(30, "", "");
+    Car* tempCar29 = new Car(29, "", "");
+    Car* tempCar28 = new Car(28, "", "");
+    Car* tempCar19 = new Car(19, "", "");
+    Car* tempCar18 = new Car(18, "", "");
+    Car* tempCar50 = new Car(50, "", "");
+    Car* tempCar49 = new Car(49, "", "");
+    Car* tempCar48 = new Car(48, "", "");
+    Car* tempCar47 = new Car(47, "", "");
+    Car* tempCar2 = new Car(2, "", "");
+    Car* tempCar3 = new Car(3, "", "");
+    Car* tempCar4 = new Car(4, "", "");
+    Car* tempCar5 = new Car(5, "", "");
+    Car* tempCar40 = new Car(40, "", "");
+    Car* tempCar39 = new Car(39, "", "");
+    
+    parkinglot.popCar(tempCar30);
+    parkinglot.popCar(tempCar29);
+    parkinglot.popCar(tempCar28);
+    parkinglot.popCar(tempCar19);
+    parkinglot.popCar(tempCar18);
+    parkinglot.popCar(tempCar50);
+    parkinglot.popCar(tempCar49);
+    parkinglot.popCar(tempCar48);
+    parkinglot.popCar(tempCar47);
+    parkinglot.popCar(tempCar2);
+    parkinglot.popCar(tempCar3);
+    parkinglot.popCar(tempCar4);
+    parkinglot.popCar(tempCar5);
+    parkinglot.popCar(tempCar40);
+    parkinglot.popCar(tempCar39);
+
+    delete tempCar31;
+    delete tempCar30;
+    delete tempCar29;
+    delete tempCar28;
+    delete tempCar19;
+    delete tempCar18;
+    delete tempCar50;
+    delete tempCar49;
+    delete tempCar48;
+    delete tempCar47;
+    delete tempCar2;
+    delete tempCar3;
+    delete tempCar4;
+    delete tempCar5;
+    delete tempCar40;
+    delete tempCar39;
+
+    cout << "\nAfter Event 7:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 8: Insert new car at stack 5 (index 4)\n";
+    Car* newCar = new Car(100, "Test Model", "Test Driver");
+    int insertResult = parkinglot.insertAt(newCar, 4);
+    if(insertResult == 0) {
+        cout << "Car 100 inserted at stack 5\n";
+    } else {
+        cout << "Stack 5 is full, could not insert car 100\n";
+        delete newCar;
+    }
+    cout << "\nAfter Event 8:\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    
+    //////////////////////////////////////////////////////////////////
+    cout << "EVENT 9: Enqueue 30 more cars\n";
+    added = 0;
+    // Use cars 51-60 (10 cars)
+    for(int i = 51; i < 61; i++) {
+        int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
         if(result == 0) {
             added++;
         }
     }
-    cout << "Added " << added << " more cars" << endl;
-    
-    // Event 5: Pop car 30
-    cout << "\n=== Event 5: Try to pop car 30 ===" << endl;
-
-    // Event 6: Find car 12
-    cout << "\n=== Event 6: Find car 12 ===" << endl;
-    Car* tempCar12 = new Car(12, "temp", "temp");
-    pair<int, int> findResult = parkinglot.find(tempCar12);
-    delete tempCar12;  // Clean up
-    if(findResult.first != -1) {
-        cout << "Car 12 found at stack " << findResult.first 
-             << ", position " << findResult.second << endl;
-    } else {
-        cout << "Car 12 not found"<< endl;
-    }
-    
-    // Event 7: Pop a bunch of cars
-    cout << "\n=== Event 7: Pop cars 5, 10, 15 ===" << endl;
-    // Create dummy cars to pass to popCar
-    Car* tempCar5 = new Car(5, "", "");
-    Car* tempCar10 = new Car(10, "", "");
-    Car* tempCar15 = new Car(15, "", "");
-    
-    cout << "Attempting to pop car 5..." << endl;
-    parkinglot.popCar(tempCar5);
-    cout << "Attempting to pop car 10..." << endl;
-    parkinglot.popCar(tempCar10);
-    cout << "Attempting to pop car 15..." << endl;
-    parkinglot.popCar(tempCar15);
-    
-    delete tempCar5;
-    delete tempCar10;
-    delete tempCar15;
-    
-    // Event 8: Insert car at stack 5
-    cout << "\n=== Event 8: Insert new car at stack 5 ===" << endl;
-    Car* newCar = new Car(100, "Test Model", "Test Driver");
-    int insertResult = parkinglot.insertAt(newCar, 4);
-    if(insertResult == 0) {
-        cout << "Car inserted at stack 5" << endl;
-    } else {
-        cout << "Stack 5 is full" << endl;
-        delete newCar;  // Clean up if insertion failed
-    }
-    
-    // Event 9: Enqueue 30 more cars
-    cout << "\n=== Event 9: Enqueue 30 more cars ===" << endl;
-    added = 0;
-    // Use remaining cars
-    for(int i = 51; i < 60; i++) {
-        if(parkinglot.addToQueue(carIDnums[i], models[i], driverNames[i]) == 0) {
+    // Use cars 61-80 (20 cars)
+    for(int i = 61; i < 81; i++) {
+        int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
+        if(result == 0) {
             added++;
         }
     }
-    // Create additional cars
-    for(int i = 60; i < 81; i++) {
-        if(parkinglot.addToQueue(1000 + i, "Extra Model", "Extra Driver") == 0) {
-            added++;
-        }
-    }
-    //////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    return 0;
-}
+    cout << "\nSuccessfully added " << added << " more cars\n";
+    cout << "\nAfter Event 9 (FINAL STATE):\n";
+    parkinglot.display();
+    cout << "----------------------------------------\n\n";
+    cout << "ALL EVENTS COMPLETED\n";
 /*
 series of events:
 - enqueue 21 cars and put them normally into stacks (question: should parkinglot initialize after each enqueue or only when it's called or what?)
@@ -443,3 +524,4 @@ series of events:
 - insert car at stack 5
 - enqueue 30 more
 */
+}
