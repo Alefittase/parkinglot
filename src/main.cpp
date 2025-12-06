@@ -4,185 +4,318 @@
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Input.H>
 #include <FL/Fl_Int_Input.H>
-#include <cstdlib>
-#include <cstdio>
+#include <FL/Fl_Multiline_Output.H>
+#include <FL/fl_draw.H>
 #include <iostream>
+#include <sstream>
 
-using namespace std;
+#include "parkinglot.cpp"   // you explicitly requested including the cpp
 
-// Function implementations for testing
-void enter_parking(const char* license_plate, const char* model, const char* type) {
-    cout << "Enter Parking: " << license_plate << " " << model << " " << type << "\n";
-}
+// ----------------------- Global Parkinglot -----------------------
+Parkinglot parking(10, 3, 5);
 
-void sort_parking(int stack_number) {
-    cout << "Sort Parking: " << stack_number << "\n";
-}
+// ----------------------- Widgets -----------------------
+Fl_Int_Input *queue_cap_input;
+Fl_Int_Input *stack_num_input;
+Fl_Int_Input *stack_cap_input;
 
-void move_parking(int origin_stack, int destination_stack) {
-    cout << "Move Parking: " << origin_stack << " " << destination_stack << "\n";
-}
-
-void exit_parking(const char* license_plate) {
-    cout << "Exit Parking: " << license_plate << "\n";
-}
-
-// Global pointers to input fields
-// Enter Parking fields
 Fl_Input *license_plate_input;
 Fl_Input *model_input;
 Fl_Input *type_input;
 
-// Sort field
 Fl_Int_Input *sort_stack_input;
-
-// Move fields
 Fl_Int_Input *origin_stack_input;
 Fl_Int_Input *destination_stack_input;
 
-// Exit field
 Fl_Input *exit_license_input;
+Fl_Multiline_Output *parking_display;
 
-void enter_parking_cb(Fl_Widget* w, void*)
-{
-    const char* license_plate = license_plate_input->value();
-    const char* model = model_input->value();
-    const char* type = type_input->value();
-    
-    // Basic validation - check if license plate is not empty
-    if (license_plate && strlen(license_plate) > 0) {
-        enter_parking(license_plate, model, type);
-        
-        // Clear inputs after submission
-        license_plate_input->value("");
-        model_input->value("");
-        type_input->value("");
+
+// --------------------------------------------------------------
+//                       Helper Functions
+// --------------------------------------------------------------
+void update_display() {
+    std::stringstream ss;
+
+    // Queue
+    ss << "Queue: ";
+    Car* q = parking.carQ.getFront();
+    for (int i = 0; i < parking.carQ.getSize(); i++) {
+        ss << q->getCarId() << " ";
+        q = q->getNext();
     }
+    ss << "\n\n";
+
+    // Stacks
+    for (int i = 0; i < parking.parkings.size(); i++) {
+        ss << "Stack " << i << ": ";
+        Car* top = parking.parkings[i].getTop();
+        while (top) {
+            ss << top->getCarId() << " ";
+            top = top->getNext();
+        }
+        ss << "\n";
+    }
+
+    parking_display->value(ss.str().c_str());
 }
 
-void sort_parking_cb(Fl_Widget* w, void*)
-{
-    const char* stack_str = sort_stack_input->value();
-    if (stack_str && strlen(stack_str) > 0) {
-        int stack_number = atoi(stack_str);
-        sort_parking(stack_number);
-        sort_stack_input->value("");
-    }
+
+// --------------------------------------------------------------
+//                          Callbacks
+// --------------------------------------------------------------
+void create_parkinglot_cb(Fl_Widget*, void*) {
+    int q = atoi(queue_cap_input->value());
+    int n = atoi(stack_num_input->value());
+    int c = atoi(stack_cap_input->value());
+    if (q <= 0 || n <= 0 || c <= 0) return;
+
+    parking = Parkinglot(q, n, c);
+
+    queue_cap_input->value("");
+    stack_num_input->value("");
+    stack_cap_input->value("");
+
+    update_display();
 }
 
-void move_parking_cb(Fl_Widget* w, void*)
-{
-    const char* origin_str = origin_stack_input->value();
-    const char* dest_str = destination_stack_input->value();
-    
-    if (origin_str && strlen(origin_str) > 0 && dest_str && strlen(dest_str) > 0) {
-        int origin = atoi(origin_str);
-        int destination = atoi(dest_str);
-        move_parking(origin, destination);
-        origin_stack_input->value("");
-        destination_stack_input->value("");
-    }
+void enter_parking_cb(Fl_Widget*, void*) {
+    int id = atoi(license_plate_input->value());
+    std::string model = model_input->value();
+    std::string type = type_input->value();
+
+    parking.addToQueue(id, model, type);
+
+    license_plate_input->value("");
+    model_input->value("");
+    type_input->value("");
+
+    update_display();
 }
 
-void exit_parking_cb(Fl_Widget* w, void*)
-{
-    const char* license_plate = exit_license_input->value();
-    if (license_plate && strlen(license_plate) > 0) {
-        exit_parking(license_plate);
-        exit_license_input->value("");
-    }
+void sort_parking_cb(Fl_Widget*, void*) {
+    int st = atoi(sort_stack_input->value());
+    if (st < 0 || st >= parking.parkings.size()) return;
+
+    parking.sort(st);
+    sort_stack_input->value("");
+    update_display();
 }
 
-void quit_cb(Fl_Widget* w, void*) {
+void move_parking_cb(Fl_Widget*, void*) {
+    int o = atoi(origin_stack_input->value());
+    int d = atoi(destination_stack_input->value());
+
+    parking.move(o, d);
+
+    origin_stack_input->value("");
+    destination_stack_input->value("");
+    update_display();
+}
+
+void exit_parking_cb(Fl_Widget*, void*) {
+    int id = atoi(exit_license_input->value());
+    Car tmp(id, "", "");
+    parking.popCar(&tmp);
+
+    exit_license_input->value("");
+    update_display();
+}
+
+void quit_cb(Fl_Widget*, void*) {
     exit(0);
 }
 
-int main()
-{
-    Fl_Window *window = new Fl_Window(600, 650, "Parking Management System");
-    
-    // Title
-    Fl_Box *title = new Fl_Box(200, 20, 200, 30, "Parking Management System");
+
+
+// --------------------------------------------------------------
+//                       Themed Button Helper
+// --------------------------------------------------------------
+Fl_Button* themed_button(int x, int y, int w, int h, const char* label) {
+    Fl_Button* b = new Fl_Button(x, y, w, h, label);
+    b->color(fl_rgb_color(40, 120, 200));
+    b->labelcolor(FL_WHITE);
+    b->labelfont(FL_HELVETICA_BOLD);
+    b->box(FL_ROUNDED_BOX);
+    return b;
+}
+
+static int centered_btn_y(int y){
+    return y + (28 - 28) / 2;
+}
+
+
+// --------------------------------------------------------------
+//                            MAIN
+// --------------------------------------------------------------
+int main() {
+    Fl_Window *window = new Fl_Window(1000, 900, "Parking Management System");
+
+    window->color(fl_rgb_color(245, 245, 245)); // light grey background
+
+    const int ROW_H = 42;
+    const int LABEL_W = 140;
+    const int INPUT_W = 140;
+    const int BTN_W = 100;
+    const int START_X = 40;
+
+    int y = 20;
+
+
+    // ------------------------------------------------------
+    //                 CREATE PARKING LOT
+    // ------------------------------------------------------
+    Fl_Box *title = new Fl_Box(START_X, y, 400, 30, "Create Parking Lot");
     title->labelfont(FL_BOLD);
-    title->labelsize(18);
-    
-    int y_position = 70;
-    int label_width = 120;
-    int input_width = 200;
-    int button_width = 100;
-    int spacing = 50;
-    
-    // Enter Parking Section
-    Fl_Box *enter_label = new Fl_Box(50, y_position, 200, 25, "Enter Car Information:");
-    enter_label->labelfont(FL_BOLD);
-    y_position += 30;
-    
-    // License Plate
-    Fl_Box *license_label = new Fl_Box(50, y_position, label_width, 25, "License Plate:");
-    license_plate_input = new Fl_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 35;
-    
-    // Model
-    Fl_Box *model_label = new Fl_Box(50, y_position, label_width, 25, "Model:");
-    model_input = new Fl_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 35;
-    
-    // Type
-    Fl_Box *type_label = new Fl_Box(50, y_position, label_width, 25, "Type:");
-    type_input = new Fl_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 40;
-    
-    Fl_Button *enter_btn = new Fl_Button(50 + label_width + input_width + 20, y_position - 80, button_width, 30, "Enter Parking");
+    title->labelsize(16);
+    y += ROW_H;
+
+    // Queue capacity
+    new Fl_Box(START_X, y, LABEL_W, 28, "Queue Capacity:");
+    queue_cap_input = new Fl_Int_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    // Stack number
+    y += ROW_H;
+    new Fl_Box(START_X, y, LABEL_W, 28, "Number of Stacks:");
+    stack_num_input = new Fl_Int_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    // Stack capacity
+    y += ROW_H;
+    new Fl_Box(START_X, y, LABEL_W, 28, "Stack Capacity:");
+    stack_cap_input = new Fl_Int_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    // Create button
+    int btn_y = centered_btn_y(y);
+    y += ROW_H;
+    Fl_Button *create_btn = themed_button(
+        START_X + LABEL_W + 8 + INPUT_W + 25,
+        btn_y,
+        BTN_W,
+        28,
+        "Create"
+    );
+    create_btn->callback(create_parkinglot_cb);
+
+    // Separator line
+    y += ROW_H + 10;
+    Fl_Box *sep = new Fl_Box(START_X, y, 420, 2, "");
+    sep->box(FL_FLAT_BOX);
+    sep->color(fl_rgb_color(200, 200, 200));
+    y += 30;
+
+
+    // ------------------------------------------------------
+    //                    ENTER CAR
+    // ------------------------------------------------------
+    Fl_Box *enter_title = new Fl_Box(START_X, y, 200, 28, "Enter Car");
+    enter_title->labelfont(FL_BOLD);
+    y += ROW_H;
+
+    new Fl_Box(START_X, y, LABEL_W, 28, "License Plate:");
+    license_plate_input = new Fl_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    new Fl_Box(START_X, y + ROW_H, LABEL_W, 28, "Model:");
+    model_input = new Fl_Input(START_X + LABEL_W + 8, y + ROW_H, INPUT_W, 28);
+
+    new Fl_Box(START_X, y + 2*ROW_H, LABEL_W, 28, "Type:");
+    type_input = new Fl_Input(START_X + LABEL_W + 8, y + 2*ROW_H, INPUT_W, 28);
+
+    Fl_Button *enter_btn = themed_button(
+        START_X + LABEL_W + 8 + INPUT_W + 25,
+        centered_btn_y(y),
+        BTN_W,
+        28,
+        "Enter"
+    );
     enter_btn->callback(enter_parking_cb);
-    
-    // Sort Section
-    Fl_Box *sort_label = new Fl_Box(50, y_position, 200, 25, "Sort Parking Stack:");
-    sort_label->labelfont(FL_BOLD);
-    y_position += 30;
-    
-    Fl_Box *sort_stack_label = new Fl_Box(50, y_position, label_width, 25, "Stack Number:");
-    sort_stack_input = new Fl_Int_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 40;
-    
-    Fl_Button *sort_btn = new Fl_Button(50 + label_width + input_width + 20, y_position - 40, button_width, 30, "Sort");
+    y += 3*ROW_H + 10;
+
+
+    // ------------------------------------------------------
+    //                 SORT STACK
+    // ------------------------------------------------------
+    Fl_Box *sort_title = new Fl_Box(START_X, y, 200, 28, "Sort Stack");
+    sort_title->labelfont(FL_BOLD);
+    y += ROW_H;
+
+    new Fl_Box(START_X, y, LABEL_W, 28, "Stack Number:");
+    sort_stack_input = new Fl_Int_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    Fl_Button *sort_btn = themed_button(
+        START_X + LABEL_W + 8 + INPUT_W + 25,
+        centered_btn_y(y),
+        BTN_W,
+        28,
+        "Sort"
+    );
     sort_btn->callback(sort_parking_cb);
-    
-    // Move Section
-    Fl_Box *move_label = new Fl_Box(50, y_position, 200, 25, "Move Between Stacks:");
-    move_label->labelfont(FL_BOLD);
-    y_position += 30;
-    
-    // Origin Stack
-    Fl_Box *origin_label = new Fl_Box(50, y_position, label_width, 25, "Origin Stack:");
-    origin_stack_input = new Fl_Int_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 35;
-    
-    // Destination Stack
-    Fl_Box *destination_label = new Fl_Box(50, y_position, label_width, 25, "Destination Stack:");
-    destination_stack_input = new Fl_Int_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 40;
-    
-    Fl_Button *move_btn = new Fl_Button(50 + label_width + input_width + 20, y_position - 40, button_width, 30, "Move");
+    y += ROW_H + 20;
+
+
+    // ------------------------------------------------------
+    //                  MOVE STACKS
+    // ------------------------------------------------------
+    Fl_Box *move_title = new Fl_Box(START_X, y, 300, 28, "Move Cars Between Stacks");
+    move_title->labelfont(FL_BOLD);
+    y += ROW_H;
+
+    new Fl_Box(START_X, y, LABEL_W, 28, "Origin Stack:");
+    origin_stack_input = new Fl_Int_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    new Fl_Box(START_X, y + ROW_H, LABEL_W, 28, "Destination Stack:");
+    destination_stack_input = new Fl_Int_Input(START_X + LABEL_W + 8, y + ROW_H, INPUT_W, 28);
+
+    Fl_Button *move_btn = themed_button(
+        START_X + LABEL_W + 8 + INPUT_W + 25,
+        centered_btn_y(y),
+        BTN_W,
+        28,
+        "Move"
+    );
     move_btn->callback(move_parking_cb);
-    
-    // Exit Parking Section
-    Fl_Box *exit_label = new Fl_Box(50, y_position, 200, 25, "Exit Parking:");
-    exit_label->labelfont(FL_BOLD);
-    y_position += 30;
-    
-    Fl_Box *exit_license_label = new Fl_Box(50, y_position, label_width, 25, "License Plate:");
-    exit_license_input = new Fl_Input(50 + label_width, y_position, input_width, 25);
-    y_position += 40;
-    
-    Fl_Button *exit_btn = new Fl_Button(50 + label_width + input_width + 20, y_position - 40, button_width, 30, "Exit Parking");
+    y += 2*ROW_H + 20;
+
+
+    // ------------------------------------------------------
+    //                   EXIT CAR
+    // ------------------------------------------------------
+    Fl_Box *exit_title = new Fl_Box(START_X, y, 200, 28, "Exit Car");
+    exit_title->labelfont(FL_BOLD);
+    y += ROW_H;
+
+    new Fl_Box(START_X, y, LABEL_W, 28, "License Plate:");
+    exit_license_input = new Fl_Input(START_X + LABEL_W + 8, y, INPUT_W, 28);
+
+    Fl_Button *exit_btn = themed_button(
+        START_X + LABEL_W + 8 + INPUT_W + 25,
+        centered_btn_y(y),
+        BTN_W,
+        28,
+        "Exit"
+    );
     exit_btn->callback(exit_parking_cb);
-    
-    // Quit Button at the bottom
-    Fl_Button *quit_btn = new Fl_Button(250, y_position + 20, 100, 30, "Quit");
+    y += ROW_H + 20;
+
+
+    // ------------------------------------------------------
+    //                     QUIT
+    // ------------------------------------------------------
+    Fl_Button *quit_btn = themed_button(START_X, y, 100, 30, "Quit");
     quit_btn->callback(quit_cb);
-    
+
+
+    // ------------------------------------------------------
+    //                PARKINGLOT DISPLAY
+    // ------------------------------------------------------
+    parking_display = new Fl_Multiline_Output(520, 20, 450, 720);
+    parking_display->textsize(15);
+    parking_display->color(fl_rgb_color(255, 255, 255));
+    parking_display->box(FL_DOWN_BOX);
+
+
     window->end();
     window->show();
-    
+
+    update_display();
     return Fl::run();
 }

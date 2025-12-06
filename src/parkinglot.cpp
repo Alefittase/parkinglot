@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <queue>
 using namespace std;
 
 class Car {
@@ -184,9 +185,9 @@ public:
 
 class Parkinglot {
 private:
+public:
     MyQueue carQ;
     vector<MyStack> parkings;
-public:
     Parkinglot(int queueCap, int stackNum, int stackCap){
         carQ.setCapacity(queueCap);
         for(int i=0; i<stackNum; i++){
@@ -302,6 +303,7 @@ public:
 };
 
 // temporary main function for testing purposes without gui
+/*
 int main(){
     int carIDs[100] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -544,7 +546,7 @@ int main(){
     
     cout<<"----------------------------------------\n\n";
     cout<<"ALL EVENTS COMPLETED\n";
-/*
+
 series of events:
 - enqueue 21 cars and put them normally into stacks (question: should parkinglot initialize after each enqueue or only when it's called or what?)
 - sort stack number 5
@@ -555,5 +557,5 @@ series of events:
 - pop a bunch of cars
 - insert car at stack 5
 - enqueue 30 more
-*/
 }
+*/

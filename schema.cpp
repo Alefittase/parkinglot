@@ -20,3 +20,5 @@ notes:
 
 how to compile and run:
     //g++ -o build/parkinglot src/main.cpp `fltk-config --cxxflags --ldflags`; ./build/parkinglot
+    
+    //g++ main.cpp -o ../build/test `fltk-config --cxxflags --ldflags`;../build/test 
