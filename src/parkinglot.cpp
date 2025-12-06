@@ -19,7 +19,6 @@ public:
     int getCarId() const {return carId;}
     string getModel() const {return model;}
     string getDriverName() const {return driverName;}
-    // string getInfo() const {return "Car ID: " + (string)carId + "\nModel: " + model + "\nDriver: " + driverName + "\n";} ---> causes problems !?
     Car* getNext() const {return next;}
     
     // Setters
@@ -34,6 +33,22 @@ private:
     int size;
     int capacity;
     Car* top=nullptr;
+
+    void merge_sort(vector<Car> &a, int l, int r){
+        if(l>=r) return;
+        int m=l+(r-l)/2;
+        merge_sort(a, l, m);
+        merge_sort(a, m+1, r);
+
+        vector<Car> tmp;
+        int i=l, j=m+1;
+        while(i<=m && j<=r)
+            tmp.push_back(a[i].getCarId()<=a[j].getCarId()?a[i++]:a[j++]);
+        while(i<=m) tmp.push_back(a[i++]);
+        while(j<=r) tmp.push_back(a[j++]);
+        for(int k=0; k<tmp.size(); ++k)
+            a[l+k]=tmp[k];
+    }
 
 public:
     // Constructors
@@ -74,12 +89,21 @@ public:
     Car* pop(){
         if(isEmpty()) return nullptr;
         Car* returnee=top;
-        if(size>1) top=top->getNext();
+        top=top->getNext();
         size--;
         return returnee;
     }
 
-    void sort(){}
+    void sort(){
+        if(isEmpty()) return;
+        vector<Car> v;
+        while(size) v.push_back(*pop());
+        merge_sort(v, 0, v.size()-1);
+        while(v.size()){
+            push(new Car(v[v.size()-1].getCarId(), v[v.size()-1].getModel(), v[v.size()-1].getModel()));
+            v.pop_back();
+        }
+    }
 
     ~MyStack() {
         while (top != nullptr) {
@@ -228,7 +252,7 @@ public:
     }
 
     pair<int, int> find(Car* car){
-        pair<int, int> result={-1, -1};
+        pair<int, int> result; result.first=-1; result.second=-1;
         Car* pcar;
         for(int i=0; i<parkings.size(); i++){
             if(parkings[i].isEmpty()) continue; 
@@ -248,7 +272,7 @@ public:
     void display(){
         cout<<"Cars in queue:\n";
         if(carQ.isEmpty()) {
-            cout << "(empty)";
+            cout<<"(empty)";
         } else {
             Car* car = carQ.getFront();
             for(int i=0; i<carQ.getSize(); i++){
@@ -261,11 +285,11 @@ public:
         cout<<"\nCars in parkinglot:\n";
         for(int stackIdx = 0; stackIdx < parkings.size(); stackIdx++){
             MyStack& parking = parkings[stackIdx];
-
+            
             // Show empty slots
             for(int i=0; i<parking.getCapacity()-parking.getSize(); i++) 
-                cout<<"- ";
-
+            cout<<"- ";
+        
             // Show cars (top to bottom)
             Car* currentCar = parking.getTop();
             while(currentCar != nullptr){
@@ -329,99 +353,99 @@ int main(){
     int queueCapacity = 30, stackNumber = 6, stackCapacity = 10;
     Parkinglot parkinglot(queueCapacity, stackNumber, stackCapacity);
     
-    cout << "=== INITIAL STATE ===\n";
-    cout << "Queue capacity: " << queueCapacity << endl;
-    cout << "Number of stacks: " << stackNumber << endl;
-    cout << "Stack capacity: " << stackCapacity << endl;
-    cout << "Total parking capacity: " << stackNumber * stackCapacity << endl;
+    cout<<"=== INITIAL STATE ===\n";
+    cout<<"Queue capacity: "<<queueCapacity<<endl;
+    cout<<"Number of stacks: "<<stackNumber<<endl;
+    cout<<"Stack capacity: "<<stackCapacity<<endl;
+    cout<<"Total parking capacity: "<<stackNumber * stackCapacity<<endl;
     
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 1: Enqueue 21 cars\n";
+    cout<<"EVENT 1: Enqueue 21 cars\n";
     int added = 0;
     for(int i = 0; i < 21; i++) {
         int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
         if(result == 0) {
             added++;
         } else {
-            cout << "Queue full! Could not add car " << carIDs[i] << endl;
+            cout<<"Queue full! Could not add car "<<carIDs[i]<<endl;
         }
     }
-    cout << "\nSuccessfully added " << added << " cars to queue\n";
-    cout << "\nAfter Event 1:\n";
+    cout<<"\nSuccessfully added "<<added<<" cars to queue\n";
+    cout<<"\nAfter Event 1:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
 
     ///////////////////////////////////////////////////////////////////
-    cout << "EVENT 2: Sort stack number 0\n";
+    cout<<"EVENT 2: Sort stack number 0\n";
     parkinglot.sort(0);
-    cout << "\nSuccessfully sorted stack 0 (no change, to be written later)\n";
-    cout << "\nAfter Event 2:\n";
+    cout<<"\nSuccessfully sorted stack 0 (no change, to be written later)\n";
+    cout<<"\nAfter Event 2:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 3: Move all cars from stack 0 to stack 2\n";
+    cout<<"EVENT 3: Move all cars from stack 0 to stack 2\n";
     int moveResult = parkinglot.move(0, 2);
     if(moveResult == 0) {
-        cout << "Move successful: All cars moved from stack 0 to stack 2\n";
+        cout<<"Move successful: All cars moved from stack 0 to stack 2\n";
     } else {
-        cout << "Move failed: Not enough space to empty stack 0\n";
+        cout<<"Move failed: Not enough space to empty stack 0\n";
     }
-    cout << "\nAfter Event 3:\n";
+    cout<<"\nAfter Event 3:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 4: Enqueue 30 more cars (cars 21-50)\n";
+    cout<<"EVENT 4: Enqueue 30 more cars (cars 21-50)\n";
     added = 0;
     for(int i = 21; i < 51; i++) {
         int result = parkinglot.addToQueue(carIDs[i], models[i], driverNames[i]);
         if(result == 0) {
             added++;
         } else {
-            cout << "Queue full! Could not add car " << carIDs[i] << endl;
+            cout<<"Queue full! Could not add car "<<carIDs[i]<<endl;
         }
     }
-    cout << "\nSuccessfully added " << added << " more cars\n";
-    cout << "\nAfter Event 4:\n";
+    cout<<"\nSuccessfully added "<<added<<" more cars\n";
+    cout<<"\nAfter Event 4:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 5: Pop car 20\n";
+    cout<<"EVENT 5: Pop car 20\n";
     Car* tempCar20 = new Car(20, "", "");
     int popResult = parkinglot.popCar(tempCar20);
     if(popResult == 0) {
-        cout << "Car 20 successfully popped\n";
+        cout<<"Car 20 successfully popped\n";
     } else {
-        cout << "Car 20 not found (may not be at top of any stack)\n";
+        cout<<"Car 20 not found (may not be at top of any stack)\n";
     }
     delete tempCar20;
-    cout << "\nAfter Event 5:\n";
+    cout<<"\nAfter Event 5:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 6: Find car 12\n";
+    cout<<"EVENT 6: Find car 12\n";
     Car* tempCar12 = new Car(12, "", "");
     pair<int, int> findResult = parkinglot.find(tempCar12);
     if(findResult.first != -1) {
-        cout << "Car 12 found at stack " << findResult.first 
-             << ", position " << findResult.second << " (0 = top)\n";
+        cout<<"Car 12 found at stack "<<findResult.first 
+            <<", position "<<findResult.second<<" (0 = top)\n";
     } else {
-        cout << "Car 12 not found\n";
+        cout<<"Car 12 not found\n";
     }
     delete tempCar12;
-    cout << "\nAfter Event 6:\n";
+    cout<<"\nAfter Event 6:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 7: Pop cars 31, 30, 29, 28, 19, 18, 50, 49, 48, 47, 2, 3, 4, 5, 40, 39\n";
+    cout<<"EVENT 7: Pop cars 31, 30, 29, 28, 19, 18, 50, 49, 48, 47, 2, 3, 4, 5, 40, 39\n";
     Car* tempCar31 = new Car(31, "", "");
     Car* tempCar30 = new Car(30, "", "");
     Car* tempCar29 = new Car(29, "", "");
@@ -472,26 +496,26 @@ int main(){
     delete tempCar40;
     delete tempCar39;
 
-    cout << "\nAfter Event 7:\n";
+    cout<<"\nAfter Event 7:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 8: Insert new car at stack 5 (index 4)\n";
+    cout<<"EVENT 8: Insert new car at stack 5 (index 4)\n";
     Car* newCar = new Car(100, "Test Model", "Test Driver");
     int insertResult = parkinglot.insertAt(newCar, 4);
     if(insertResult == 0) {
-        cout << "Car 100 inserted at stack 5\n";
+        cout<<"Car 100 inserted at stack 5\n";
     } else {
-        cout << "Stack 5 is full, could not insert car 100\n";
+        cout<<"Stack 5 is full, could not insert car 100\n";
         delete newCar;
     }
-    cout << "\nAfter Event 8:\n";
+    cout<<"\nAfter Event 8:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
+    cout<<"----------------------------------------\n\n";
     
     //////////////////////////////////////////////////////////////////
-    cout << "EVENT 9: Enqueue 30 more cars\n";
+    cout<<"EVENT 9: Enqueue 30 more cars\n";
     added = 0;
     // Use cars 51-60 (10 cars)
     for(int i = 51; i < 61; i++) {
@@ -507,11 +531,19 @@ int main(){
             added++;
         }
     }
-    cout << "\nSuccessfully added " << added << " more cars\n";
-    cout << "\nAfter Event 9 (FINAL STATE):\n";
+    cout<<"\nSuccessfully added "<<added<<" more cars\n";
+    cout<<"\nAfter Event 9:\n";
     parkinglot.display();
-    cout << "----------------------------------------\n\n";
-    cout << "ALL EVENTS COMPLETED\n";
+    cout<<"----------------------------------------\n\n";
+    //////////////////////////////////////////////////////////////////
+    cout<<"EVENT 10: sort stack 2\n";
+    parkinglot.sort(2);
+    cout<<"\nAfter Event 10 (FINAL STATE):\n";
+    parkinglot.display();
+    
+    
+    cout<<"----------------------------------------\n\n";
+    cout<<"ALL EVENTS COMPLETED\n";
 /*
 series of events:
 - enqueue 21 cars and put them normally into stacks (question: should parkinglot initialize after each enqueue or only when it's called or what?)
