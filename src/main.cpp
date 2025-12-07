@@ -48,7 +48,10 @@ void update_display() {
 
     // Stacks
     for (int i = 0; i < parking.parkings.size(); i++) {
-        ss << "Stack " << i << ": ";
+        ss << "Parking " << i << ": ";
+        for(int j=0; j<parking.parkings[i].getCapacity()-parking.parkings[i].getSize(); j++){
+            ss << "_ ";
+        }
         Car* top = parking.parkings[i].getTop();
         while (top) {
             ss << top->getCarId() << " ";
@@ -230,6 +233,7 @@ int main() {
     new Fl_Box(START_X, y + 2*ROW_H, LABEL_W, 28, "Type:");
     type_input = new Fl_Input(START_X + LABEL_W + 8, y + 2*ROW_H, INPUT_W, 28);
 
+    y+=ROW_H;
     Fl_Button *enter_btn = themed_button(
         START_X + LABEL_W + 8 + INPUT_W + 25,
         centered_btn_y(y),
@@ -238,7 +242,7 @@ int main() {
         "Enter"
     );
     enter_btn->callback(enter_parking_cb);
-    y += 3*ROW_H + 10;
+    y += 2*ROW_H + 10;
 
 
     // ------------------------------------------------------
@@ -274,7 +278,7 @@ int main() {
 
     new Fl_Box(START_X, y + ROW_H, LABEL_W, 28, "Destination Stack:");
     destination_stack_input = new Fl_Int_Input(START_X + LABEL_W + 8, y + ROW_H, INPUT_W, 28);
-
+    y+=ROW_H/2;
     Fl_Button *move_btn = themed_button(
         START_X + LABEL_W + 8 + INPUT_W + 25,
         centered_btn_y(y),
@@ -283,7 +287,7 @@ int main() {
         "Move"
     );
     move_btn->callback(move_parking_cb);
-    y += 2*ROW_H + 20;
+    y += 3*ROW_H/2 + 20;
 
 
     // ---------- Find Parking Row ----------
