@@ -351,3 +351,13 @@ int main() {
     update_display();
     return Fl::run();
 }
+
+
+/*
+addToQueue() : 0 Success, 1 Queue Full, 2 Duplicate Car
+insert() : 0 Success, 1 Parkinglot Full
+insertAt() : 0 Success, 1 Stack Full
+move() : 0 Success, 1 Not enough space in parking 
+popCar() : 0 Success, 1 Car not at top, 2 Car not found 
+find() : {-1, -1} Car not found, else {Stack, Position}
+*/

@@ -197,7 +197,7 @@ public:
         }
     }
 
-    int initialize(){ //0 -> queue successfully emptied. 1 -> parkinglot is full please wait
+    int initialize(){ //0 -> queue successfully emptied. 1 -> parkinglot is full please wait. 
         for(int i=0; i<parkings.size(); i++){
             while(!carQ.isEmpty()){
                 Car* car = carQ.getFront();
@@ -209,7 +209,36 @@ public:
         return 1;
     }
 
-    int addToQueue(int carId, string model, string driverName){
+    pair<int, int> find(int carId){
+        pair<int, int> result; result.first=-1; result.second=-1;
+        Car* pcar;
+        for(int i=0; i<parkings.size(); i++){
+            if(parkings[i].isEmpty()) continue; 
+            pcar = parkings[i].getTop();
+            for(int j=0; j<parkings[i].getSize(); j++){
+                if(pcar->getCarId()==carId){
+                    result.first=i;
+                    result.second=j;
+                    return result;
+                }
+                pcar=pcar->getNext();
+            }
+        }
+        return result;
+    }
+
+    bool isInQueue(int carId){ 
+        if(carQ.isEmpty()) return 0;
+        Car* car=carQ.getFront();
+        for(int i=0; i<carQ.getCapacity(); i++){
+            if(car.getCarId()==carId) return 1;
+            car=car.getNext();
+        }
+        return 0;
+    }
+
+    int addToQueue(int carId, string model, string driverName){ //0 -> successfully added , 1 -> queue full, 2 -> car id already exists
+        if(find(carId).fisrt!=-1 || isInQueue(carId)) return 2;
         Car* car = new Car(carId, model, driverName);
         int result = carQ.enqueue(car);
         initialize();
@@ -240,34 +269,13 @@ public:
         if(parkings[i].isEmpty()) return 0;
         return 1;
     }
-    int popCar(Car* car){ // 0 -> "successful", 1 -> "car not found"
-        for(int i=0; i<parkings.size(); i++){
-            if(parkings[i].isEmpty()) continue;
-            if(parkings[i].getTop()->getCarId()==car->getCarId()){
-                parkings[i].pop();
-                initialize();
-                return 0;
-            }
-        }
-        return 1;
-    }
-
-    pair<int, int> find(Car* car){
-        pair<int, int> result; result.first=-1; result.second=-1;
-        Car* pcar;
-        for(int i=0; i<parkings.size(); i++){
-            if(parkings[i].isEmpty()) continue; 
-            pcar = parkings[i].getTop();
-            for(int j=0; j<parkings[i].getSize(); j++){
-                if(pcar->getCarId()==car->getCarId()){
-                    result.first=i;
-                    result.second=j;
-                    return result;
-                }
-                pcar=pcar->getNext();
-            }
-        }
-        return result;
+    int popCar(Car* car){ // 0 Success, 1 Car not at top, 2 Car not found 
+        pair<int, int> pos = find(car.getCarId());
+        if(pos.first==-1) return 2;
+        if(pos.second!=0) return 1;
+        parkings[pos.first].pop();
+        initialize();
+        return 0;
     }
 
     void display(){
@@ -304,6 +312,7 @@ public:
 
 // temporary main function for testing purposes without gui
 /*
+
 int main(){
     int carIDs[100] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -434,7 +443,7 @@ int main(){
     //////////////////////////////////////////////////////////////////
     cout<<"EVENT 6: Find car 12\n";
     Car* tempCar12 = new Car(12, "", "");
-    pair<int, int> findResult = parkinglot.find(tempCar12);
+    pair<int, int> findResult = parkinglot.find(12);
     if(findResult.first != -1) {
         cout<<"Car 12 found at stack "<<findResult.first 
             <<", position "<<findResult.second<<" (0 = top)\n";
@@ -546,16 +555,5 @@ int main(){
     
     cout<<"----------------------------------------\n\n";
     cout<<"ALL EVENTS COMPLETED\n";
-
-series of events:
-- enqueue 21 cars and put them normally into stacks (question: should parkinglot initialize after each enqueue or only when it's called or what?)
-- sort stack number 5
-- move all cars from stack 0 to 2
-- enqueue 30 more cars
-- pop car 30
-- find car 12
-- pop a bunch of cars
-- insert car at stack 5
-- enqueue 30 more
 }
 */
