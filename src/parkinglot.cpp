@@ -4,38 +4,38 @@
 #include <queue>
 using namespace std;
 
-class Car {
+class Car { // Classifying car as Node in Stack and Queue
 private:
     int carId;
     string model, driverName;
     Car* next;
 
 public:
-    // Constructors
+    // Constructors **Time Complexity: O(1)**
     Car() : carId(-1), model(""), driverName(""), next(nullptr) {}
     Car(int carID, string mod, string driver) : carId(carID), model(mod), driverName(driver), next(nullptr) {}
     Car(int carID, string mod, string driver, Car* nextCar) : carId(carID), model(mod), driverName(driver), next(nextCar) {}
     
-    // Getters
+    // Getters **Time Complexity: O(1)**
     int getCarId() const {return carId;}
     string getModel() const {return model;}
     string getDriverName() const {return driverName;}
     Car* getNext() const {return next;}
     
-    // Setters
+    // Setters **Time Complexity: O(1)**
     void setCarId(int carID) {carId=carID;}
     void setModel(string mod) {model=mod;}
     void setDriverName(string driver) {driverName=driver;}
     void setNext(Car* nextCar) {next=nextCar;}
 };
 
-class MyStack {
+class MyStack { //Implementing Stack
 private:
     int size;
     int capacity;
     Car* top=nullptr;
 
-    void merge_sort(vector<Car> &a, int l, int r){
+    void merge_sort(vector<Car> &a, int l, int r){ //Implementation of merge sort on linkedlist (stack) **Time Complexity: O(nlogn)**
         if(l>=r) return;
         int m=l+(r-l)/2;
         merge_sort(a, l, m);
@@ -52,13 +52,13 @@ private:
     }
 
 public:
-    // Constructors
+    // Constructors **Time Complexity: O(1)**
     MyStack() : size(0), top(nullptr) {}
     MyStack(Car* firstCar) : size(1) {
         push(firstCar);
     }
     
-    // Getters
+    // Getters **Time Complexity: O(1)**
     int getSize() const {return size;}
     int getCapacity() const {return capacity;}
     Car* getTop() const {
@@ -66,20 +66,20 @@ public:
         return top;
     }
     
-    // Setters
+    // Setters **Time Complexity: O(1)**
     void setSize(int newSize) {size=newSize;}
     void setCapacity(int newCap) {capacity=newCap;}
     void setTop(Car* newTop) {top=newTop;}
     
-    int isEmpty(){
+    int isEmpty(){ // **Time Complexity: O(1)**
         return (size==0);
     }
 
-    int isFull(){
+    int isFull(){ // **Time Complexity: O(1)**
         return (size==capacity);
     }
 
-    int push(Car* newest){ //0 -> "successful", 1 -> "Stack is full"
+    int push(Car* newest){ //Pushes car pointer into Stack, returns 0 for success and 1 for fail when stack is full **Time Complexity: O(1)**
         if(isFull()) return 1;
         if(size>0) newest->setNext(top);
         top = newest;
@@ -87,7 +87,7 @@ public:
         return 0;
     }
     
-    Car* pop(){
+    Car* pop(){ //pops and returns the top element if not empty **Time Complexity: O(1)**
         if(isEmpty()) return nullptr;
         Car* returnee=top;
         top=top->getNext();
@@ -95,7 +95,7 @@ public:
         return returnee;
     }
 
-    void sort(){
+    void sort(){ //calls merge_sort appropriately **Time Complexity: O(nlogn)**
         if(isEmpty()) return;
         vector<Car> v;
         while(size) v.push_back(*pop());
@@ -106,7 +106,7 @@ public:
         }
     }
 
-    ~MyStack() {
+    ~MyStack() { //Deconstructor, deletes every node **Time Complexity: O(n)**
         while (top != nullptr) {
             Car* temp = top;
             top = top->getNext();
@@ -115,7 +115,7 @@ public:
     }
 };
 
-class MyQueue {
+class MyQueue { // Implementing Queue
 private:
     int size;
     int capacity;
@@ -123,32 +123,32 @@ private:
     Car* rear=nullptr;
 
 public:
-    // Constructors
+    // Constructors **Time Complexity: O(1)**
     MyQueue() : size(0), front(nullptr), rear(nullptr) {}
     MyQueue(Car* firstCar) : size(1) {
         enqueue(firstCar);
     }
     
-    // Getters
+    // Getters **Time Complexity: O(1)**
     int getSize() const {return size;}
     int getCapacity() const {return capacity;}
     Car* getFront() const {return front;}
     Car* getRear() const {return rear;}
 
-    // Setters
+    // Setters **Time Complexity: O(1)**
     void setSize(int newSize) {size=newSize;}
     void setFront(Car* newFront) {front=newFront;}
     void setCapacity(int newCap) {capacity=newCap;}
     
-    int isEmpty(){
+    int isEmpty(){ //**Time Complexity: O(1)**
         return (size==0);
     }
 
-    int isFull(){
+    int isFull(){ //**Time Complexity: O(1)**
         return (size==capacity);
     }
 
-    int enqueue(Car* car){ //0 -> "successful", 1 -> "Queue is full"
+    int enqueue(Car* car){ //Enqueues a car pointer, returns 0 if successful and 1 if Queue is full **Time Complexity: O(1)**
         if(isFull()) return 1;
         if(size>0) rear->setNext(car);
         if(isEmpty()) front=car;
@@ -157,7 +157,7 @@ public:
         return 0;
     }
     
-    Car* dequeue(){
+    Car* dequeue(){ //Dequeues the top car pointer and returns it if not empty **Time Complexity: O(1)**
         if(isEmpty()) return nullptr;
         Car* returnee=front;
         if(size>1) front=front->getNext();
@@ -165,16 +165,16 @@ public:
         return returnee;
     }
 
-    void printQueue(){
+    void printQueue(){ // Prints the queue for debugging **Time Complexity: O(n)**
         Car* car = front;
         for(int i=0; i<size; i++){
-        cout<<car->getCarId()<<" ";
-        car=car->getNext();
+            cout<<car->getCarId()<<" ";
+            car=car->getNext();
         }
         cout<<"\n";
     }
 
-    ~MyQueue() {
+    ~MyQueue() { //Deconstructor **Time Complexity: O(n)**
         while (front != nullptr) {
             Car* temp = front;
             front = front->getNext();
@@ -183,12 +183,12 @@ public:
     }
 };
 
-class Parkinglot {
+class Parkinglot { //Main class with implementation of functions requested in the project
 private:
 public:
-    MyQueue carQ;
-    vector<MyStack> parkings;
-    Parkinglot(int queueCap, int stackNum, int stackCap){
+    MyQueue carQ; //car queue
+    vector<MyStack> parkings; //parkings
+    Parkinglot(int queueCap, int stackNum, int stackCap){//Constructor **Time Complexity: O(n)**
         carQ.setCapacity(queueCap);
         for(int i=0; i<stackNum; i++){
             MyStack stack;
@@ -197,7 +197,8 @@ public:
         }
     }
 
-    int initialize(){ //0 -> queue successfully emptied. 1 -> parkinglot is full please wait. 
+    int initialize(){ //Inserts every element from queue into the parkinglot if possible, called after every addition to queue and every pop.
+        // returns 0 if it successfully empties the queue and 1 if the parkinglot gets full before the queue is empty. **Time Complexity: O(n)**
         for(int i=0; i<parkings.size(); i++){
             while(!carQ.isEmpty()){
                 Car* car = carQ.getFront();
@@ -209,7 +210,7 @@ public:
         return 1;
     }
 
-    pair<int, int> find(int carId){
+    pair<int, int> find(int carId){ //Finds the requested carId, returns {-1, -1} if car doesn't exist in parkinglot and {stack number, position}(both zero based) if it is found **Time Complexity O(n)**
         pair<int, int> result; result.first=-1; result.second=-1;
         Car* pcar;
         for(int i=0; i<parkings.size(); i++){
@@ -227,36 +228,41 @@ public:
         return result;
     }
 
-    bool isInQueue(int carId){ 
+    bool isInQueue(int carId){  //Checks if the car is already in queue **Time Complexity O(n)**
         if(carQ.isEmpty()) return 0;
         Car* car=carQ.getFront();
         for(int i=0; i<carQ.getCapacity(); i++){
-            if(car.getCarId()==carId) return 1;
-            car=car.getNext();
+            if(car->getCarId()==carId) return 1;
+            car=car->getNext();
         }
         return 0;
     }
 
-    int addToQueue(int carId, string model, string driverName){ //0 -> successfully added , 1 -> queue full, 2 -> car id already exists
-        if(find(carId).fisrt!=-1 || isInQueue(carId)) return 2;
+    int addToQueue(int carId, string model, string driverName){ //Adds a new car to queue based on the car's information
+        // returns 0 when the car is successfully added, 1 when queue is full and 2 when the car id already exists in parkinglot or queue
+        // **Time Complexity O(n)**
+        if(find(carId).first!=-1 || isInQueue(carId)) return 2;
         Car* car = new Car(carId, model, driverName);
         int result = carQ.enqueue(car);
         initialize();
         return result;
     }
-    int insert(Car* car){
+    int insert(Car* car){ //Inserts the car at the first available spot in the parkinglot. returns 0 if successful and 1 if the parkinglot is full **Time Complexity O(n)**
         for(MyStack &parking : parkings){
             if(parking.push(car) == 0) return 0;
         }
         return 1;
     }
-    int insertAt(Car* car, int i){ // returns as push states
+    int insertAt(Car* car, int i){ // Inserts the car at a specific stack if it's not full, returns 0 if successful and 1 if the stack is full. **Time Complexity O(1)**
         return parkings[i].push(car);
     }
-    void sort(int i){
+    void sort(int i){ // Sorts the i-th parking(stack) using the function in MyStack. **Time Complexity O(nlogn)**
         parkings[i].sort();
     }
-    int move(int i, int j){// 0 -> "move successful", 1 -> "not enough space in parkinglot for emptying parking i"
+    int move(int i, int j){// moves as many cars as possible from the i-th parking to the j-th parking, if the j-th parkings is full, it will continue into the j+1-th and j+2-th and so on
+    // upon reaching the end of stacks, it will loop back and try to insert the cars into parkings 0 to i-1. and after that, from i+1 to j-1.
+    // it will return 0 if the move is successful and all cars in i have been moved and returns 1 if there's not enough space in parkinglot for emptying parking i.
+    // **Time Complexity O(n)**
         int cnt=0;
         int cap=parkings[0].getSize();
         while(!parkings[i].isEmpty() && cnt<(parkings.size()*cap+1)){
@@ -269,8 +275,9 @@ public:
         if(parkings[i].isEmpty()) return 0;
         return 1;
     }
-    int popCar(Car* car){ // 0 Success, 1 Car not at top, 2 Car not found 
-        pair<int, int> pos = find(car.getCarId());
+    int popCar(Car* car){ // Pops the given car if it's the top of one of the parkings, returns 0 if successful, 1 if car not is not at top and 2 if car not in parking
+        //**Time Complexity O(n)**
+        pair<int, int> pos = find(car->getCarId());
         if(pos.first==-1) return 2;
         if(pos.second!=0) return 1;
         parkings[pos.first].pop();
@@ -278,7 +285,7 @@ public:
         return 0;
     }
 
-    void display(){
+    void display(){ // Displays the Queue and Parking for ease at testing in the terminal **Time Complexity O(n)**
         cout<<"Cars in queue:\n";
         if(carQ.isEmpty()) {
             cout<<"(empty)";
@@ -310,8 +317,8 @@ public:
     }
 };
 
-// temporary main function for testing purposes without gui
 /*
+// temporary main function for testing purposes without gui
 
 int main(){
     int carIDs[100] = {
