@@ -82,6 +82,7 @@ public:
     int push(Car* newest){ //Pushes car pointer into Stack, returns 0 for success and 1 for fail when stack is full **Time Complexity: O(1)**
         if(isFull()) return 1;
         if(size>0) newest->setNext(top);
+        else newest->setNext(nullptr);
         top = newest;
         size++;
         return 0;
@@ -89,9 +90,10 @@ public:
     
     Car* pop(){ //pops and returns the top element if not empty **Time Complexity: O(1)**
         if(isEmpty()) return nullptr;
-        Car* returnee=top;
+        Car* returnee = top;
         top=top->getNext();
         size--;
+        returnee->setNext(nullptr);
         return returnee;
     }
 
@@ -149,6 +151,7 @@ public:
     }
 
     int enqueue(Car* car){ //Enqueues a car pointer, returns 0 if successful and 1 if Queue is full **Time Complexity: O(1)**
+        car->setNext(nullptr);
         if(isFull()) return 1;
         if(size>0) rear->setNext(car);
         if(isEmpty()) front=car;
@@ -160,7 +163,7 @@ public:
     Car* dequeue(){ //Dequeues the top car pointer and returns it if not empty **Time Complexity: O(1)**
         if(isEmpty()) return nullptr;
         Car* returnee=front;
-        if(size>1) front=front->getNext();
+        front=front->getNext();
         size--;
         return returnee;
     }
@@ -248,12 +251,14 @@ public:
         return result;
     }
     int insert(Car* car){ //Inserts the car at the first available spot in the parkinglot. returns 0 if successful and 1 if the parkinglot is full **Time Complexity O(n)**
+        car->setNext(nullptr);
         for(MyStack &parking : parkings){
             if(parking.push(car) == 0) return 0;
         }
         return 1;
     }
     int insertAt(Car* car, int i){ // Inserts the car at a specific stack if it's not full, returns 0 if successful and 1 if the stack is full. **Time Complexity O(1)**
+        car->setNext(nullptr);
         return parkings[i].push(car);
     }
     void sort(int i){ // Sorts the i-th parking(stack) using the function in MyStack. **Time Complexity O(nlogn)**
@@ -283,7 +288,8 @@ public:
         
             // Show cars (top to bottom)
             Car* currentCar = parking.getTop();
-            while(currentCar != nullptr){
+            int mxn=10;
+            while(currentCar != nullptr && mxn--){
                 cout<<(currentCar->getCarId()<10?"0":"")<<currentCar->getCarId()<<" ";
                 currentCar = currentCar->getNext();
             }
@@ -301,10 +307,13 @@ public:
             if(parkings[j].isFull()) j++;
             if(j==i) j++;
             if(j==parkings.size()) j=0;
-            cout<<"In Move. cnt= "<<cnt<<" j= "<<j<<"\n";
-            display();
-            parkings[j].push(parkings[i].pop());
+            //-----
+            Car* tmpCar = parkings[i].pop();
+            tmpCar->setNext(nullptr);
+            parkings[j].push(tmpCar);
+            //-----
             cnt++;
+            display();
         }
         if(parkings[i].isEmpty()) return 0;
         return 1;
@@ -320,7 +329,7 @@ public:
     }
 
 };
-
+/*
 int main(){
     int carIDs[100] = {
         1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20,
@@ -412,3 +421,4 @@ int main(){
     parkinglot.display();
     cout<<"\n\n";
 }
+*/
