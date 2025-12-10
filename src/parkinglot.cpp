@@ -1,39 +1,30 @@
 #include <iostream>
 #include <string>
 #include <vector>
-#include <queue>
+#include <sstream>
+#include <iomanip>
+
 using namespace std;
 
 class Car { // Classifying car as Node in Stack and Queue
-private:
-    int carId;
-    string model, driverName;
+public:
+    int id;
+    string model;
     Car* next;
 
-public:
     // Constructors **Time Complexity: O(1)**
-    Car() : carId(-1), model(""), driverName(""), next(nullptr) {}
-    Car(int carID, string mod, string driver) : carId(carID), model(mod), driverName(driver), next(nullptr) {}
-    Car(int carID, string mod, string driver, Car* nextCar) : carId(carID), model(mod), driverName(driver), next(nextCar) {}
-    
-    // Getters **Time Complexity: O(1)**
-    int getCarId() const {return carId;}
-    string getModel() const {return model;}
-    string getDriverName() const {return driverName;}
-    Car* getNext() const {return next;}
-    
-    // Setters **Time Complexity: O(1)**
-    void setCarId(int carID) {carId=carID;}
-    void setModel(string mod) {model=mod;}
-    void setDriverName(string driver) {driverName=driver;}
-    void setNext(Car* nextCar) {next=nextCar;}
+    Car() : id(-1), model(""), next(nullptr) {}
+    Car(int id, string mod) : id(id), model(mod), next(nullptr) {}
 };
 
 class MyStack { //Implementing Stack
-private:
+public:
     int size;
     int capacity;
     Car* top=nullptr;
+    
+    // Constructors **Time Complexity: O(1)**
+    MyStack() : size(0), capacity(0), top(nullptr) {}
 
     void merge_sort(vector<Car> &a, int l, int r){ //Implementation of merge sort on linkedlist (stack) **Time Complexity: O(nlogn)**
         if(l>=r) return;
@@ -44,77 +35,76 @@ private:
         vector<Car> tmp;
         int i=l, j=m+1;
         while(i<=m && j<=r)
-            tmp.push_back(a[i].getCarId()<=a[j].getCarId()?a[i++]:a[j++]);
+            tmp.push_back(a[i].id<=a[j].id?a[i++]:a[j++]);
         while(i<=m) tmp.push_back(a[i++]);
         while(j<=r) tmp.push_back(a[j++]);
+        
         for(int k=0; k<tmp.size(); ++k)
             a[l+k]=tmp[k];
-    }
-
-public:
-    // Constructors **Time Complexity: O(1)**
-    MyStack() : size(0), top(nullptr) {}
-    MyStack(Car* firstCar) : size(1) {
-        push(firstCar);
+        
+            return;
     }
     
-    // Getters **Time Complexity: O(1)**
-    int getSize() const {return size;}
-    int getCapacity() const {return capacity;}
-    Car* getTop() const {
-        if(size==0) return nullptr;
-        return top;
-    }
-    
-    // Setters **Time Complexity: O(1)**
-    void setSize(int newSize) {size=newSize;}
-    void setCapacity(int newCap) {capacity=newCap;}
-    void setTop(Car* newTop) {top=newTop;}
-    
-    int isEmpty(){ // **Time Complexity: O(1)**
+    bool isEmpty(){ // **Time Complexity: O(1)**
         return (size==0);
     }
 
-    int isFull(){ // **Time Complexity: O(1)**
+    bool isFull(){ // **Time Complexity: O(1)**
         return (size==capacity);
     }
 
-    int push(Car* newest){ //Pushes car pointer into Stack, returns 0 for success and 1 for fail when stack is full **Time Complexity: O(1)**
+    bool push(int id, string model){ //Pushes car pointer into Stack, returns 0 for success and 1 for fail when stack is full **Time Complexity: O(1)**
         if(isFull()) return 1;
-        if(size>0) newest->setNext(top);
-        top = newest;
+        Car newCar(id, model);
+        newCar.next = top;
+        top = &newCar;
         size++;
         return 0;
     }
     
-    Car* pop(){ //pops and returns the top element if not empty **Time Complexity: O(1)**
-        if(isEmpty()) return nullptr;
-        Car* returnee=top;
-        top=top->getNext();
+    Car pop(){ //pops and returns the top element if not empty **Time Complexity: O(1)**
+        if(isEmpty()){
+            Car errorcar(-1, "CNF");
+            return errorcar;
+        }
+        Car answer((*top).id, (*top).model);
+        Car* tmp=(*top).next;
+        delete top;
+        top=tmp;
         size--;
-        return returnee;
+        return answer;
     }
 
     void sort(){ //calls merge_sort appropriately **Time Complexity: O(nlogn)**
         if(isEmpty()) return;
         vector<Car> v;
-        while(size) v.push_back(*pop());
+        while(size) v.push_back(pop());
         merge_sort(v, 0, v.size()-1);
         while(v.size()){
-            push(new Car(v[v.size()-1].getCarId(), v[v.size()-1].getModel(), v[v.size()-1].getModel()));
+            push(v.back().id, v.back().model);
             v.pop_back();
         }
     }
 
-    ~MyStack() { //Deconstructor, deletes every node **Time Complexity: O(n)**
-        while (top != nullptr) {
-            Car* temp = top;
-            top = top->getNext();
-            delete temp;
+    string print(){
+        Car* iter=top;
+        stringstream ss;
+        while(iter!=nullptr){
+            ss<<setw(3)<<(*iter).id<<"-";
+            iter=(*iter).next;
         }
+        return (ss.str().c_str());
+    }
+
+    ~MyStack() { //Deconstructor, deletes every node **Time Complexity: O(n)**
+        // while (top != nullptr) {
+        //     Car* temp = top;
+        //     top = top->getNext();
+        //     delete temp;
+        // }
     }
 };
-
+/*
 class MyQueue { // Implementing Queue
 private:
     int size;
@@ -140,11 +130,11 @@ public:
     void setFront(Car* newFront) {front=newFront;}
     void setCapacity(int newCap) {capacity=newCap;}
     
-    int isEmpty(){ //**Time Complexity: O(1)**
+    int isEmpty(){ // **Time Complexity: O(1)**
         return (size==0);
     }
 
-    int isFull(){ //**Time Complexity: O(1)**
+    int isFull(){ // **Time Complexity: O(1)**
         return (size==capacity);
     }
 
@@ -188,6 +178,38 @@ private:
 public:
     MyQueue carQ; //car queue
     vector<MyStack> parkings; //parkings
+
+    void display(){ // Displays the Queue and Parking for ease at testing in the terminal **Time Complexity O(n)**
+        cout<<"Cars in queue:\n";
+        if(carQ.isEmpty()) {
+            cout<<"(empty)";
+        } else {
+            Car* car = carQ.getFront();
+            for(int i=0; i<carQ.getSize(); i++){
+                if(car != nullptr) {
+                    cout<<car->getCarId()<<" ";
+                    car = car->getNext();
+                }
+            }
+        }
+        cout<<"\nCars in parkinglot:\n";
+        for(int stackIdx = 0; stackIdx < parkings.size(); stackIdx++){
+            MyStack& parking = parkings[stackIdx];
+            
+            // Show empty slots
+            for(int i=0; i<parking.getCapacity()-parking.getSize(); i++) 
+            cout<<"- ";
+        
+            // Show cars (top to bottom)
+            Car* currentCar = parking.getTop();
+            while(currentCar != nullptr){
+                cout<<currentCar->getCarId()<<" ";
+                currentCar = currentCar->getNext();
+            }
+            cout<<"\n";
+        }
+    }
+
     Parkinglot(int queueCap, int stackNum, int stackCap){//Constructor **Time Complexity: O(n)**
         carQ.setCapacity(queueCap);
         for(int i=0; i<stackNum; i++){
@@ -276,7 +298,7 @@ public:
         return 1;
     }
     int popCar(Car* car){ // Pops the given car if it's the top of one of the parkings, returns 0 if successful, 1 if car not is not at top and 2 if car not in parking
-        //**Time Complexity O(n)**
+        // **Time Complexity O(n)**
         pair<int, int> pos = find(car->getCarId());
         if(pos.first==-1) return 2;
         if(pos.second!=0) return 1;
@@ -285,37 +307,46 @@ public:
         return 0;
     }
 
-    void display(){ // Displays the Queue and Parking for ease at testing in the terminal **Time Complexity O(n)**
-        cout<<"Cars in queue:\n";
-        if(carQ.isEmpty()) {
-            cout<<"(empty)";
-        } else {
-            Car* car = carQ.getFront();
-            for(int i=0; i<carQ.getSize(); i++){
-                if(car != nullptr) {
-                    cout<<car->getCarId()<<" ";
-                    car = car->getNext();
-                }
-            }
-        }
-        cout<<"\nCars in parkinglot:\n";
-        for(int stackIdx = 0; stackIdx < parkings.size(); stackIdx++){
-            MyStack& parking = parkings[stackIdx];
-            
-            // Show empty slots
-            for(int i=0; i<parking.getCapacity()-parking.getSize(); i++) 
-            cout<<"- ";
-        
-            // Show cars (top to bottom)
-            Car* currentCar = parking.getTop();
-            while(currentCar != nullptr){
-                cout<<currentCar->getCarId()<<" ";
-                currentCar = currentCar->getNext();
-            }
-            cout<<"\n";
-        }
-    }
 };
+*/
+int main(){
+    MyStack s;
+    s.capacity=5;
+
+    s.push(1,"A");
+    s.print();
+
+    s.pop();
+    s.print();
+
+    s.push(2, "B");
+    s.push(3, "C");
+    s.push(4, "D");
+    s.print();
+
+    s.pop();
+    s.pop();
+    s.print();
+
+    s.push(5, "E");
+    s.push(6, "F");
+    s.push(7, "G");
+    s.push(8, "H");
+    s.print();
+
+    s.push(9, "I");
+    s.print();
+
+    s.pop();
+    s.pop();
+    s.pop();
+    s.pop();
+    s.pop();
+    s.pop();
+    s.print();
+
+    return 0;
+}
 
 /*
 // temporary main function for testing purposes without gui
