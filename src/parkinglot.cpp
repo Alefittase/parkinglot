@@ -13,8 +13,16 @@ public:
     Car* next;
 
     // Constructors **Time Complexity: O(1)**
-    Car() : id(-1), model(""), next(nullptr) {}
-    Car(int id, string mod) : id(id), model(mod), next(nullptr) {}
+    Car(){
+        id=-1;
+        model="";
+        next=nullptr;
+    }
+    Car(int idin, string mod){
+        id=idin;
+        model=mod;
+        next=nullptr;
+    }
 };
 
 class MyStack { //Implementing Stack
@@ -55,23 +63,21 @@ public:
 
     bool push(int id, string model){ //Pushes car pointer into Stack, returns 0 for success and 1 for fail when stack is full **Time Complexity: O(1)**
         if(isFull()) return 1;
-        Car newCar(id, model);
-        newCar.next = top;
-        top = &newCar;
+        Car*newCar = new Car(id, model);
+        newCar->next = top;
+        top = newCar;
         size++;
         return 0;
     }
     
     Car pop(){ //pops and returns the top element if not empty **Time Complexity: O(1)**
-        if(isEmpty()){
-            Car errorcar(-1, "CNF");
-            return errorcar;
-        }
-        Car answer((*top).id, (*top).model);
-        Car* tmp=(*top).next;
-        delete top;
-        top=tmp;
+        if(isEmpty()) return Car(-1, "CNF");
+        Car* tmp=top;
+        Car answer = *tmp;
+        top=tmp->next;
+        delete tmp;
         size--;
+        
         return answer;
     }
 
@@ -88,12 +94,15 @@ public:
 
     string print(){
         Car* iter=top;
+        string res;
         stringstream ss;
+        ss<<"";
         while(iter!=nullptr){
-            ss<<setw(3)<<(*iter).id<<"-";
+            ss<<setw(2)<<(*iter).id<<" -";
             iter=(*iter).next;
         }
-        return (ss.str().c_str());
+        res=ss.str();
+        return res;
     }
 
     ~MyStack() { //Deconstructor, deletes every node **Time Complexity: O(n)**
@@ -312,30 +321,29 @@ public:
 int main(){
     MyStack s;
     s.capacity=5;
-
     s.push(1,"A");
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.pop();
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.push(2, "B");
     s.push(3, "C");
     s.push(4, "D");
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.pop();
     s.pop();
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.push(5, "E");
     s.push(6, "F");
     s.push(7, "G");
     s.push(8, "H");
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.push(9, "I");
-    s.print();
+    cout<<s.print()<<"\n";
 
     s.pop();
     s.pop();
@@ -343,7 +351,7 @@ int main(){
     s.pop();
     s.pop();
     s.pop();
-    s.print();
+    cout<<s.print()<<"\n";
 
     return 0;
 }
