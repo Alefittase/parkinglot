@@ -26,10 +26,10 @@ Fl_Input *type_input;
 Fl_Int_Input *sort_stack_input;
 Fl_Int_Input *origin_stack_input;
 Fl_Int_Input *destination_stack_input;
-Fl_Input *find_license_input = 0;
+Fl_Input *find_license_input;
 Fl_Input *exit_license_input;
 Fl_Multiline_Output *parking_display;
-
+Fl_Multiline_Output *find_display;
 
 // --------------------------------------------------------------
 //                       Helper Functions
@@ -117,11 +117,16 @@ void move_parking_cb(Fl_Widget*, void*) {
 }
 
 void find_parking_cb(Fl_Widget*, void*) {
-
-    /*
-
-    */
-
+    int i = atoi(find_license_input->value());
+    pair<int, int> p;
+    p = parking.find(i);
+    std::stringstream ss;
+    if(p.first == -1 && p.second == -1) ss << "NF";
+    else ss << "   " << p.first << " - " << p.second;
+    
+    find_license_input->value("");
+    update_display();
+    find_display->value(ss.str().c_str());
 }
 
 void exit_parking_cb(Fl_Widget*, void*) {
@@ -229,9 +234,6 @@ int main() {
     new Fl_Box(START_X, y + ROW_H, LABEL_W, 28, "Model:");
     model_input = new Fl_Input(START_X + LABEL_W + 8, y + ROW_H, INPUT_W, 28);
 
-    new Fl_Box(START_X, y + 2*ROW_H, LABEL_W, 28, "Type:");
-    type_input = new Fl_Input(START_X + LABEL_W + 8, y + 2*ROW_H, INPUT_W, 28);
-
     y+=ROW_H;
     Fl_Button *enter_btn = themed_button(
         START_X + LABEL_W + 8 + INPUT_W + 25,
@@ -308,6 +310,12 @@ int main() {
         "Find"
     );
     find_btn->callback(find_parking_cb);
+
+    find_display = new Fl_Multiline_Output(START_X+420, y, 60, 28);
+    find_display->textsize(15);
+    find_display->color(fl_rgb_color(40, 120, 200));
+    find_display->box(FL_DOWN_BOX);
+
     y += ROW_H;
 
 
