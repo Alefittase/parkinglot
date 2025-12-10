@@ -21,7 +21,6 @@ Fl_Int_Input *stack_cap_input;
 
 Fl_Input *license_plate_input;
 Fl_Input *model_input;
-Fl_Input *type_input;
 
 Fl_Int_Input *sort_stack_input;
 Fl_Int_Input *origin_stack_input;
@@ -85,13 +84,11 @@ void create_parkinglot_cb(Fl_Widget*, void*) {
 void enter_parking_cb(Fl_Widget*, void*) {
     int id = atoi(license_plate_input->value());
     std::string model = model_input->value();
-    std::string type = type_input->value();
 
     parking.addToQueue(id, model);
 
     license_plate_input->value("");
     model_input->value("");
-    type_input->value("");
 
     update_display();
 }
