@@ -39,23 +39,23 @@ void update_display() {
 
     // Queue
     ss << "Queue: ";
-    Car* q = parking.carQ.getFront();
-    for (int i = 0; i < parking.carQ.getSize(); i++) {
-        ss << q->getCarId() << " ";
-        q = q->getNext();
+    Car* q = parking.Q.front;
+    for (int i = 0; i < parking.Q.size; i++) {
+        ss << q->id << " ";
+        q = q->next;
     }
     ss << "\n\n";
 
     // Stacks
     for (int i = 0; i < parking.parkings.size(); i++) {
         ss << "Parking " << i << ": ";
-        for(int j=0; j<parking.parkings[i].getCapacity()-parking.parkings[i].getSize(); j++){
+        for(int j=0; j<parking.parkings[i].capacity-parking.parkings[i].size; j++){
             ss << "_ ";
         }
-        Car* top = parking.parkings[i].getTop();
+        Car* top = parking.parkings[i].top;
         while (top) {
-            ss << top->getCarId() << " ";
-            top = top->getNext();
+            ss << top->id << " ";
+            top = top->next;
         }
         ss << "\n";
     }
@@ -87,7 +87,7 @@ void enter_parking_cb(Fl_Widget*, void*) {
     std::string model = model_input->value();
     std::string type = type_input->value();
 
-    parking.addToQueue(id, model, type);
+    parking.addToQueue(id, model);
 
     license_plate_input->value("");
     model_input->value("");
@@ -126,8 +126,7 @@ void find_parking_cb(Fl_Widget*, void*) {
 
 void exit_parking_cb(Fl_Widget*, void*) {
     int id = atoi(exit_license_input->value());
-    Car tmp(id, "", "");
-    parking.popCar(&tmp);
+    parking.popCar(id);
 
     exit_license_input->value("");
     update_display();
